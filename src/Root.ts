@@ -24,9 +24,12 @@ export default function Root() {
   );
 
   for (let i = 9; i >= 0; i--) {
-    const child = useChild(() => new Card(canvasCenter.addX((i-4.5)*45), {number: i, points: 1}))
+    const child = useChild(() => new Card(canvasCenter.addX((i-4.5)*45), {number: i, points: 1}));
 
-    const attractor = useChild(() => new Attractor(canvasCenter.addX((i-4.5)*30).addYMutate(160 + Math.abs((i - 4.5)*3)), (i - 4.5) * 0.05));
+    const attractor = useChild(() => Attractor(
+      new Vector(0, -800).rotateMutate(-(i-4.5) * 0.04).addMutate(canvasCenter).addYMutate(950),
+      (i - 4.5) * 0.03)
+    );
     attractor.rootComponent.attractees.add(child);
   }
 }
