@@ -28,13 +28,14 @@ export default function Root() {
 
   const gameData = setup(2, {pro: false}, "");
 
+  useChild(() => Placeholder(canvasCenter.addY(170).addXMutate(-220), "facedown"));
   useChild(() => PlayerLabel(canvasCenter.addY(210), gameData.players[0], 0));
 
   for (let i = 0; i < gameData.rows.length; i++) {
     for (let j = 0; j < 6; j++) {
       const pos = canvasCenter.addX(-240 + j * 55).addYMutate((i - 1.5) * 80 - 75);
 
-      useChild(() => Placeholder(pos, j));
+      useChild(() => Placeholder(pos, j === 5 ? "danger" : "default"));
     }
   }
 
