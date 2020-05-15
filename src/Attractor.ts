@@ -30,7 +30,7 @@ export default function Attractor(position: Vector, rotation = 0) {
       const position = geometry.position!;
       const physics = attractee.getComponent(Physics.Body)!;
       const positionDiff = mainGeo.position.subtract(position);
-      const force = positionDiff.multiply(0.4 * ms / 1000000);
+      const force = positionDiff.multiply(0.2 * ms / 1000000);
       const rotationDiff = mainGeo.rotation - geometry.rotation;
       const magnitude = positionDiff.magnitude;
 
