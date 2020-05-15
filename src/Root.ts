@@ -28,7 +28,8 @@ export default function Root() {
 
     const attractor = useChild(() => Attractor(
       new Vector(0, -800).rotateMutate(-(i-4.5) * 0.04).addMutate(canvasCenter).addYMutate(950),
-      (i - 4.5) * 0.03)
+      0 //(i - 4.5) * 0.03
+      )
     );
     attractor.rootComponent.attractees.add(child);
   }
