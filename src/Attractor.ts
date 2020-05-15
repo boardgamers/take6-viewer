@@ -9,14 +9,15 @@ import {
   Physics,
 } from "@hex-engine/2d";
 
-export default function Attractor(position: Vector, rotation = 0) {
+export default function Attractor(position: Vector, rotation = 0, scale = 1) {
   useType(Attractor as any);
 
   const mainGeo = useNewComponent(() =>
     Geometry({
       shape: new Polygon([]),
       position: position.clone(),
-      rotation
+      rotation,
+      scale: new Vector(scale, scale)
     })
   );
 
@@ -44,6 +45,10 @@ export default function Attractor(position: Vector, rotation = 0) {
         physics.setAngularVelocity(0);
       } else {
         physics.setAngularVelocity(rotationDiff > 0 ? 0.01 : -0.01);
+      }
+
+      if (!geometry.scale.equals(mainGeo.scale)) {
+        geometry.scale.mutateInto(mainGeo.scale);
       }
     }
     x++;

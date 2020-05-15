@@ -20,7 +20,7 @@ export default function Card(position: Vector, card: ICard) {
   const geometry = useNewComponent(() =>
     Geometry({
       shape: Polygon.rectangle(new Vector(40, 60)),
-      position: position.clone(),
+      position: position.clone()
     })
   );
 

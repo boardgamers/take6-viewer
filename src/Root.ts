@@ -29,10 +29,18 @@ export default function Root() {
 
   useChild(() => PlayerLabel(canvasCenter.addY(210), gameData.players[0], 0));
 
+  for (let i = 0; i < gameData.rows.length; i++) {
+    const pos = canvasCenter.addX(-220).addYMutate((i - 1.5) * 68 - 80);
+    const attractor = useChild(() => Attractor(pos.clone(), 0, 1));
+    const card = useChild(() => Card(pos, gameData.rows[i][0]));
+
+    attractor.rootComponent.attractees.add(card);
+  }
+
   const hand = gameData.players[0].hand;
-  console.log(hand);
+
   for (let i = hand.length - 1; i >= 0; i--) {
-    const child = useChild(() => new Card(canvasCenter.addX((i-(hand.length-1)/2)*45), hand[i]));
+    const child = useChild(() => Card(canvasCenter.addX((i-(hand.length-1)/2)*45), hand[i]));
 
     const attractor = useChild(() => Attractor(
       new Vector(0, -800).rotateMutate(-(i-(hand.length-1)/2) * 0.04).addMutate(canvasCenter).addYMutate(950),
