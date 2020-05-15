@@ -10,6 +10,7 @@ import Card from "./Card";
 import Attractor from "./Attractor";
 import { setup } from "take6-engine";
 import PlayerLabel from "./PlayerLabel";
+import Placeholder from "./Placeholder";
 
 export default function Root() {
   useType(Root);
@@ -30,11 +31,24 @@ export default function Root() {
   useChild(() => PlayerLabel(canvasCenter.addY(210), gameData.players[0], 0));
 
   for (let i = 0; i < gameData.rows.length; i++) {
-    const pos = canvasCenter.addX(-220).addYMutate((i - 1.5) * 68 - 80);
-    const attractor = useChild(() => Attractor(pos.clone(), 0, 1));
-    const card = useChild(() => Card(pos, gameData.rows[i][0]));
+    for (let j = 0; j < 6; j++) {
+      const pos = canvasCenter.addX(-240 + j * 55).addYMutate((i - 1.5) * 80 - 75);
 
-    attractor.rootComponent.attractees.add(card);
+      useChild(() => Placeholder(pos, j));
+    }
+  }
+
+  for (let i = 0; i < gameData.rows.length; i++) {
+    for (let j = 0; j < 6; j++) {
+      const pos = canvasCenter.addX(-240 + j * 55).addYMutate((i - 1.5) * 80 - 75);
+
+      const attractor = useChild(() => Attractor(pos.clone(), 0, 1));
+      if (gameData.rows[i][j]) {
+        const card = useChild(() => Card(pos, gameData.rows[i][0]));
+
+        attractor.rootComponent.attractees.add(card);
+      }
+    }
   }
 
   const hand = gameData.players[0].hand;
@@ -44,7 +58,7 @@ export default function Root() {
 
     const attractor = useChild(() => Attractor(
       new Vector(0, -800).rotateMutate(-(i-(hand.length-1)/2) * 0.04).addMutate(canvasCenter).addYMutate(950),
-      0 //(i - 4.5) * 0.03
+      (i - 4.5) * 0.03
       )
     );
     attractor.rootComponent.attractees.add(child);
