@@ -1,12 +1,16 @@
-import Placeholder from "./Placeholder";
-import { ComponentType } from "./utils";
-import { Entity } from "@hex-engine/2d";
+import { Entity, Component } from "@hex-engine/2d";
+import Attractor from "./Attractor";
 
 export interface RootData {
   playerShown: number,
   placeholders: {
-    player?: ComponentType<typeof Placeholder>
-    rows: ComponentType<typeof Placeholder>[][]
+    player?: Entity
+    rows: Entity[][]
   },
   dragged?: Entity;
+  cards: {
+    [key: number]: Entity
+  },
+  handAttractors: Entity[],
+  attractedBy: WeakMap<Entity, Component & ReturnType<typeof Attractor>>;
 }

@@ -1,7 +1,7 @@
 import { Vector, useNewComponent, Geometry, Polygon, useDraw, Physics, useRootEntity } from "@hex-engine/2d";
-import Matter, { Bounds } from "matter-js";
+import { Bounds } from "matter-js";
 import Attractor from "./Attractor";
-import Root from "./Root";
+import { store } from "./Root";
 
 interface PlaceholderData {
   kind: "facedown" | "board";
@@ -29,7 +29,7 @@ export default function Placeholder(position: Vector, kind: PlaceholderKind) {
       case "danger": context.fillStyle = "#ff000044"; break;
     }
 
-    const dragged = useRootEntity().getComponent(Root)!.data.dragged;
+    const dragged = store.dragged;
 
     if (kind === "facedown" && dragged && Bounds.overlaps(physics.body.bounds, dragged!.getComponent(Physics.Body)!.body.bounds)) {
       context.fillStyle = "#ffffff22";

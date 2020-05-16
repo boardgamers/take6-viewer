@@ -1,6 +1,6 @@
 import { Entity, Component } from "@hex-engine/2d";
 
-export type ComponentType<f extends (...args: any[]) => any> = Entity & {rootComponent: ReturnType<f> & Component};
+export type EntityType<f extends (...args: any[]) => any> = Entity & {rootComponent: ReturnType<f> & Component};
 
 // type Class<T> = { new(...args: any[]): T; };
 

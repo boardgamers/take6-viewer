@@ -10,12 +10,15 @@ import {
   Physics,
   useEntity,
   Mouse,
+  useCurrentComponent,
 } from "@hex-engine/2d";
 import Draggable from "./Draggable";
 import { Card as ICard } from "take6-engine";
+import {logic, store} from "./Root";
 
 export default function Card(position: Vector, card: ICard) {
   useType(Card);
+  const self = useCurrentComponent();
 
   const geometry = useNewComponent(() =>
     Geometry({
@@ -28,7 +31,11 @@ export default function Card(position: Vector, card: ICard) {
   const label = useNewComponent(() => Label({font}));
 
   useNewComponent(() => Physics.Body(geometry, {isSensor: true}));
-  useNewComponent(() => Draggable(geometry));
+  const draggable = useNewComponent(() => Draggable(geometry));
+
+  draggable.on("dragStop", () => {
+    logic.handleCardDrop(self.entity);
+  });
 
   useDraw((context) => {
     if (card.number === 0) {
@@ -48,4 +55,12 @@ export default function Card(position: Vector, card: ICard) {
       label.draw(context, {x: (geometry.shape.width - label.size.x) / 2, y: (geometry.shape.height - label.size.y) / 2 + 2});
     }
   });
+
+  if (card.number) {
+    store.cards[card.number] = useEntity();
+  }
+
+  return {
+    card
+  };
 }

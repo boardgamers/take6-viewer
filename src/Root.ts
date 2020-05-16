@@ -10,10 +10,15 @@ import {
 } from "@hex-engine/2d";
 import Card from "./Card";
 import Attractor from "./Attractor";
-import { setup } from "take6-engine";
 import PlayerLabel from "./PlayerLabel";
 import Placeholder from "./Placeholder";
 import { RootData } from "./rootdata";
+import Logic from "./logic";
+
+let store: RootData;
+let logic: Logic;
+
+export { store, logic };
 
 export default function Root() {
   useType(Root);
@@ -29,19 +34,26 @@ export default function Root() {
     canvas.element.height / 2
   );
 
-  const gameData = setup(2, {pro: false}, "");
+  logic = new Logic();
 
   const rootData: RootData = {
     playerShown: 0,
     placeholders: {
       rows: [],
-    }
+    },
+    cards: {
+
+    },
+    attractedBy: new WeakMap(),
+    handAttractors: []
   };
 
-  rootData.placeholders.player = useChild(() => Placeholder(canvasCenter.addY(170).addXMutate(-220), "facedown"));
-  useChild(() => PlayerLabel(canvasCenter.addY(210), gameData.players[0], rootData.playerShown));
+  store = rootData;
 
-  for (let i = 0; i < gameData.rows.length; i++) {
+  rootData.placeholders.player = useChild(() => Placeholder(canvasCenter.addY(170).addXMutate(-220), "facedown"));
+  useChild(() => PlayerLabel(canvasCenter.addY(210), logic.state.players[0], rootData.playerShown));
+
+  for (let i = 0; i < logic.state.rows.length; i++) {
     const row: typeof rootData.placeholders.rows[0] = [];
 
     rootData.placeholders.rows.push(row);
@@ -51,15 +63,15 @@ export default function Root() {
       const placeholder = useChild(() => Placeholder(pos, j === 5 ? "danger" : "default"));
       row.push(placeholder);
 
-      if (gameData.rows[i][j]) {
-        const card = useChild(() => Card(pos, gameData.rows[i][0]));
+      if (logic.state.rows[i][j]) {
+        const card = useChild(() => Card(pos, logic.state.rows[i][0]));
 
-        placeholder.getComponent(Attractor)?.attractees.add(card);
+        placeholder.getComponent(Attractor)?.attract(card);
       }
     }
   }
 
-  const hand = gameData.players[0].hand;
+  const hand = logic.state.players[0].hand;
 
   for (let i = hand.length - 1; i >= 0; i--) {
     const child = useChild(() => Card(canvasCenter.addX((i-(hand.length-1)/2)*45), hand[i]));
@@ -72,10 +84,7 @@ export default function Root() {
         rotation: (i - 4.5) * 0.03
       }));
     });
-    attractor.getComponent(Attractor)!.attractees.add(child);
+    attractor.getComponent(Attractor)!.attract(child);
+    rootData.handAttractors.unshift(attractor);
   }
-
-  return {
-    data: rootData
-  };
 }

@@ -7,6 +7,7 @@ import {
   Physics,
   useEntity,
 } from "@hex-engine/2d";
+import { store } from "./Root";
 
 export default function Attractor() {
   useType(Attractor as any);
@@ -49,6 +50,15 @@ export default function Attractor() {
   const attractees = new Set<Entity>();
 
   return {
-    attractees,
+    attract(entity: Entity) {
+      store.attractedBy.get(entity)?.unlink(entity);
+      attractees.add(entity);
+    },
+    unlink(entity: Entity) {
+      attractees.delete(entity);
+      if (store.attractedBy.get(entity) === this) {
+        store.attractedBy.delete(entity);
+      }
+    }
   }
 }

@@ -9,7 +9,8 @@ import {
   useRootEntity,
   useCurrentComponent,
 } from "@hex-engine/2d";
-import Root from "./Root";
+import Root, { store } from "./Root";
+import { EventEmitter } from "events";
 
 export default function Draggable(geometry: ReturnType<typeof Geometry>) {
   useType(Draggable);
@@ -21,12 +22,14 @@ export default function Draggable(geometry: ReturnType<typeof Geometry>) {
   let isDragging = false;
   const startedDraggingAt = new Vector(0, 0);
 
+  const emitter = new EventEmitter();
+
   const component = useCurrentComponent();
 
   mouse.onDown((event) => {
     if (physics) {
       physics.setStatic(true);
-      useRootEntity().getComponent(Root)!.data.dragged = component.entity;
+      store.dragged = component.entity;
     }
     isDragging = true;
     startedDraggingAt.mutateInto(event.pos);
@@ -42,9 +45,12 @@ export default function Draggable(geometry: ReturnType<typeof Geometry>) {
     if (physics) {
       physics.setStatic(false);
     }
-    if (useRootEntity().getComponent(Root)!.data.dragged === component.entity) {
-      delete useRootEntity().getComponent(Root)!.data.dragged;
+    if (store.dragged === component.entity) {
+      delete store.dragged;
+      emitter.emit("dragStop");
     }
     isDragging = false;
   });
+
+  return emitter;
 }
