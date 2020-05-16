@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@hex-engine/2d": "^0.4.1",
+    "matter-js": "^0.14.2",
     "take6-engine": "^0.1.0"
   },
   "devDependencies": {

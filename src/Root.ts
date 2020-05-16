@@ -38,7 +38,7 @@ export default function Root() {
     }
   };
 
-  rootData.placeholders.player = useChild(() => Placeholder(canvasCenter.addY(170).addXMutate(-220), "default"));
+  rootData.placeholders.player = useChild(() => Placeholder(canvasCenter.addY(170).addXMutate(-220), "facedown"));
   useChild(() => PlayerLabel(canvasCenter.addY(210), gameData.players[0], rootData.playerShown));
 
   for (let i = 0; i < gameData.rows.length; i++) {
