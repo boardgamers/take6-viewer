@@ -1,30 +1,23 @@
 import {
   useType,
-  useNewComponent,
   Geometry,
-  Polygon,
   Vector,
   useUpdate,
   Entity,
   Physics,
+  useEntity,
 } from "@hex-engine/2d";
 
-export default function Attractor(position: Vector, rotation = 0, scale = 1) {
+export default function Attractor() {
   useType(Attractor as any);
-
-  const mainGeo = useNewComponent(() =>
-    Geometry({
-      shape: new Polygon([]),
-      position: position.clone(),
-      rotation,
-      scale: new Vector(scale, scale)
-    })
-  );
-
-  let x = 0;
 
   useUpdate((ms) => {
     // console.log("useupdate", ms);
+    const mainGeo = useEntity().getComponent(Geometry);
+
+    if (!mainGeo) {
+      return;
+    }
 
     for (const attractee of attractees) {
       const geometry = attractee.getComponent(Geometry)!;
@@ -51,12 +44,11 @@ export default function Attractor(position: Vector, rotation = 0, scale = 1) {
         geometry.scale.mutateInto(mainGeo.scale);
       }
     }
-    x++;
   });
 
   const attractees = new Set<Entity>();
 
   return {
-    attractees
+    attractees,
   }
 }

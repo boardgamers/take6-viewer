@@ -1,10 +1,22 @@
 import { Vector, useNewComponent, Geometry, Polygon, useDraw } from "@hex-engine/2d";
+import Attractor from "./Attractor";
+
+interface PlaceholderData {
+  kind: "facedown" | "board";
+  player?: number;
+  row?: number;
+  position?: number;
+}
 
 export default function Placeholder(position: Vector, kind: PlaceholderKind) {
   const geometry = useNewComponent(() => Geometry({
-    position,
+    position: position.clone(),
     shape: Polygon.rectangle(50, 70)
   }));
+
+  const data: PlaceholderData = {
+    kind: "facedown"
+  };
 
   useDraw(context => {
     switch (kind) {
@@ -14,6 +26,12 @@ export default function Placeholder(position: Vector, kind: PlaceholderKind) {
     }
     geometry.shape.draw(context, "fill");
   });
+
+  useNewComponent(() => Attractor());
+
+  return {
+    data
+  };
 }
 
 export type PlaceholderKind = "default" | "danger" | "facedown";
