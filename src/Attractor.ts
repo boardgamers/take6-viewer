@@ -6,6 +6,8 @@ import {
   Entity,
   Physics,
   useEntity,
+  useCurrentComponent,
+  Component,
 } from "@hex-engine/2d";
 import { store } from "./Root";
 
@@ -36,11 +38,11 @@ export default function Attractor() {
         physics.applyForce(position, force);
       }
       if (Math.abs(rotationDiff) < 0.02) {
+        physics.setAngle(mainGeo.rotation);
         physics.setAngularVelocity(0);
       } else {
         physics.setAngularVelocity(rotationDiff > 0 ? 0.01 : -0.01);
       }
-
       if (!geometry.scale.equals(mainGeo.scale)) {
         geometry.scale.mutateInto(mainGeo.scale);
       }
@@ -48,15 +50,18 @@ export default function Attractor() {
   });
 
   const attractees = new Set<Entity>();
+  const self = useCurrentComponent();
 
   return {
-    attract(entity: Entity) {
+    attract(this: Component & ReturnType<typeof Attractor>, entity: Entity) {
       store.attractedBy.get(entity)?.unlink(entity);
       attractees.add(entity);
+      store.attractedBy.set(entity, this);
     },
     unlink(entity: Entity) {
+      console.log("unlinking");
       attractees.delete(entity);
-      if (store.attractedBy.get(entity) === this) {
+      if (store.attractedBy.get(entity) === self) {
         store.attractedBy.delete(entity);
       }
     }

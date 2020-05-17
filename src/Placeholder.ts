@@ -1,4 +1,4 @@
-import { Vector, useNewComponent, Geometry, Polygon, useDraw, Physics, useRootEntity } from "@hex-engine/2d";
+import { Vector, useNewComponent, Geometry, Polygon, useDraw, Physics, useRootEntity, useType } from "@hex-engine/2d";
 import { Bounds } from "matter-js";
 import Attractor from "./Attractor";
 import { store } from "./Root";
@@ -11,6 +11,8 @@ interface PlaceholderData {
 }
 
 export default function Placeholder(position: Vector, kind: PlaceholderKind) {
+  useType(Placeholder);
+
   const geometry = useNewComponent(() => Geometry({
     position: position.clone(),
     shape: Polygon.rectangle(50, 70)
