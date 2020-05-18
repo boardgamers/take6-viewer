@@ -26,14 +26,21 @@ export default function PlayerLabel(position: Vector, player: Player, playerInde
   const label = useNewComponent(() => Label({font}));
 
   useDraw((context) => {
-    context.fillStyle = "#ffaa22";
+    // context.fillStyle = "#ffaa22";
     // if (useEntity().getComponent(Mouse)?.isInsideBounds) {
     //   context.fillStyle = "green";
     // }
-    geometry.shape.draw(context, "fill");
-    context.strokeStyle = "grey";
-    geometry.shape.draw(context, "stroke");
+    // geometry.shape.draw(context, "fill");
+    // context.strokeStyle = "grey";
+    // geometry.shape.draw(context, "stroke");
 
+    font.color = playerIndex === 0 ? "orange" : "#000";
+    if (playerIndex === 0) {
+      context.shadowBlur = 1;
+      context.shadowOffsetX = 1;
+      context.shadowOffsetY = 1;
+      context.shadowColor = `rgba(255, 255, 255, ${playerIndex === 0 ? 0.4 : 0.2})`;
+    }
     label.text = player.name ?? `Player ${playerIndex + 1}`;
     label.draw(context, {x: (geometry.shape.width - label.size.x) / 2, y: (geometry.shape.height - label.size.y) / 2 + 2});
   });
