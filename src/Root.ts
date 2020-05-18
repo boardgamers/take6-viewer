@@ -7,6 +7,7 @@ import {
   Vector,
   Geometry,
   Polygon,
+  useEntity,
 } from "@hex-engine/2d";
 import Card from "./Card";
 import Attractor from "./Attractor";
@@ -16,6 +17,7 @@ import { RootData } from "./rootdata";
 import Logic from "./logic";
 import { repositionHandAttractor } from "./positioning";
 import { range } from "lodash";
+import CanvasCenter from "./CanvasCenter";
 
 let store: RootData;
 let logic: Logic;
@@ -38,6 +40,8 @@ export default function Root() {
 
   logic = new Logic();
 
+  const center = useChild(() => CanvasCenter());
+
   const rootData: RootData = {
     placeholders: {
       players: {},
@@ -48,13 +52,14 @@ export default function Root() {
     },
     attractedBy: new WeakMap(),
     handAttractors: [],
-    canvas
+    canvas,
+    canvasCenter: center
   };
 
   store = rootData;
 
-  rootData.placeholders.players[logic.player] = useChild(() => Placeholder(canvasCenter.addY(170).addXMutate(-220), "facedown"));
-  useChild(() => PlayerLabel(canvasCenter.addY(210), logic.state.players[logic.player], logic.player));
+  rootData.placeholders.players[logic.player] = useChild(() => Placeholder(new Vector(-220, 170), "facedown"));
+  useChild(() => PlayerLabel(new Vector(0, 210), logic.state.players[logic.player], logic.player));
 
   rootData.placeholders.players[logic.player].getComponent(Placeholder)!.data.enabled = true;
 
@@ -63,11 +68,11 @@ export default function Root() {
     const player = entry[1];
 
     if (index <= 5) {
-      rootData.placeholders.players[player] = useChild(() => Placeholder(canvasCenter.addY(-163 + 110 * Math.floor(index /2)).addXMutate(173 + 145 * (index % 2)), "facedown"));
-      useChild(() => PlayerLabel(canvasCenter.addY(-218 + 110 * Math.floor(index /2)).addXMutate(173 + 145 * (index % 2)), logic.state.players[player], player));
+      rootData.placeholders.players[player] = useChild(() => Placeholder(new Vector(173 + 145 * (index % 2), -163 + 110 * Math.floor(index /2)), "facedown"));
+      useChild(() => PlayerLabel(new Vector(173 + 145 * (index % 2), -218 + 110 * Math.floor(index /2)), logic.state.players[player], player));
     } else {
-      rootData.placeholders.players[player] = useChild(() => Placeholder(canvasCenter.addY(-163 + 110 * (index - 6)).addXMutate(- 317), "facedown"));
-      useChild(() => PlayerLabel(canvasCenter.addY(-218 + 110 * (index - 6)).addXMutate(- 317), logic.state.players[player], player));
+      rootData.placeholders.players[player] = useChild(() => Placeholder(new Vector(-317, -163 + 110 * (index - 6)), "facedown"));
+      useChild(() => PlayerLabel(new Vector(-317, -218 + 110 * (index - 6)), logic.state.players[player], player));
     }
   }
 
@@ -76,7 +81,7 @@ export default function Root() {
 
     rootData.placeholders.rows.push(row);
     for (let j = 0; j < 6; j++) {
-      const pos = canvasCenter.addX(-203 + j * 55).addYMutate((i - 1.5) * 80 - 75);
+      const pos = new Vector(-203 + j * 55, (i - 1.5) * 80 - 75);
 
       const placeholder = useChild(() => Placeholder(pos, j === 5 ? "danger" : "default"));
       row.push(placeholder);
@@ -92,7 +97,7 @@ export default function Root() {
   const hand = logic.state.players[0].hand;
 
   for (let i = hand.length - 1; i >= 0; i--) {
-    const child = useChild(() => Card(canvasCenter.addX((i-(hand.length-1)/2)*45), hand[i]));
+    const child = useChild(() => Card(new Vector((i-(hand.length-1)/2)*45, 0), hand[i]));
 
     const attractor = useChild(() => {
       useNewComponent(() => Attractor());
@@ -106,5 +111,15 @@ export default function Root() {
 
   for (let i = 0; i < hand.length; i++) {
     repositionHandAttractor(i, hand.length);
+  }
+
+  // Transfer everything to the canvas center
+  const root = useEntity();
+  for (const entity of root.children) {
+    if (entity !== center) {
+      entity.parent = center;
+      center.children.add(entity);
+      root.children.delete(entity);
+    }
   }
 }

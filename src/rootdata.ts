@@ -12,5 +12,6 @@ export interface RootData {
   },
   handAttractors: Entity[],
   canvas: ReturnType<typeof Canvas>,
+  canvasCenter: Entity,
   attractedBy: WeakMap<Entity, Component & ReturnType<typeof Attractor>>;
 }
