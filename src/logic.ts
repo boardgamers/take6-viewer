@@ -7,7 +7,7 @@ import { repositionHandAttractor, overlaps } from "./positioning";
 
 export default class Logic {
   constructor() {
-    this.state = setup(7, {}, "");
+    this.state = setup(10, {}, "");
     this.player = 0;
   }
 

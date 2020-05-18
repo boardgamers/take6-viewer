@@ -62,8 +62,13 @@ export default function Root() {
     const index = + entry[0];
     const player = entry[1];
 
-    rootData.placeholders.players[player] = useChild(() => Placeholder(canvasCenter.addY(-163 + 110 * Math.floor(index /2)).addXMutate(120 + 145 * (index % 2)), "facedown"));
-    useChild(() => PlayerLabel(canvasCenter.addY(-218 + 110 * Math.floor(index /2)).addXMutate(120 + 145 * (index % 2)), logic.state.players[player], player));
+    if (index <= 5) {
+      rootData.placeholders.players[player] = useChild(() => Placeholder(canvasCenter.addY(-163 + 110 * Math.floor(index /2)).addXMutate(173 + 145 * (index % 2)), "facedown"));
+      useChild(() => PlayerLabel(canvasCenter.addY(-218 + 110 * Math.floor(index /2)).addXMutate(173 + 145 * (index % 2)), logic.state.players[player], player));
+    } else {
+      rootData.placeholders.players[player] = useChild(() => Placeholder(canvasCenter.addY(-163 + 110 * (index - 6)).addXMutate(- 317), "facedown"));
+      useChild(() => PlayerLabel(canvasCenter.addY(-218 + 110 * (index - 6)).addXMutate(- 317), logic.state.players[player], player));
+    }
   }
 
   for (let i = 0; i < logic.state.rows.length; i++) {
@@ -71,7 +76,7 @@ export default function Root() {
 
     rootData.placeholders.rows.push(row);
     for (let j = 0; j < 6; j++) {
-      const pos = canvasCenter.addX(-240 + j * 55).addYMutate((i - 1.5) * 80 - 75);
+      const pos = canvasCenter.addX(-203 + j * 55).addYMutate((i - 1.5) * 80 - 75);
 
       const placeholder = useChild(() => Placeholder(pos, j === 5 ? "danger" : "default"));
       row.push(placeholder);

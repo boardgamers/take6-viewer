@@ -27,9 +27,9 @@ export default function PlayerLabel(position: Vector, player: Player, playerInde
 
   useDraw((context) => {
     context.fillStyle = "#ffaa22";
-    if (useEntity().getComponent(Mouse)?.isInsideBounds) {
-      context.fillStyle = "green";
-    }
+    // if (useEntity().getComponent(Mouse)?.isInsideBounds) {
+    //   context.fillStyle = "green";
+    // }
     geometry.shape.draw(context, "fill");
     context.strokeStyle = "grey";
     geometry.shape.draw(context, "stroke");
