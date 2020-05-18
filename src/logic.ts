@@ -1,9 +1,9 @@
 import { GameState, setup, move, MoveName } from "take6-engine";
-import { Entity, Geometry } from "@hex-engine/2d";
+import { Entity } from "@hex-engine/2d";
 import Card from "./Card";
 import { store } from "./Root";
 import Attractor from "./Attractor";
-import { repositionHandAttractor } from "./positioning";
+import { repositionHandAttractor, overlaps } from "./positioning";
 
 export default class Logic {
   constructor() {
@@ -13,7 +13,28 @@ export default class Logic {
 
   handleCardDrop(card: Entity) {
     try {
-      this.state = move(this.state, {name: MoveName.ChooseCard, data: card.getComponent(Card)!.card}, this.player);
+      const commands = this.state.players[this.player].availableMoves;
+
+      if (!commands) {
+        return;
+      }
+
+      const cardData = card.getComponent(Card)!.card;
+
+      if (commands.chooseCard) {
+        if (!commands.chooseCard.some(card => card.number === cardData.number)) {
+          return;
+        }
+        if (!overlaps(card, store.placeholders.player)) {
+          return;
+        }
+
+        this.state = move(this.state, {name: MoveName.ChooseCard, data: cardData}, this.player);
+      } else if (commands.placeCard) {
+        // Todo : proper move
+        this.state = move(this.state, {name: MoveName.ChooseCard, data: cardData}, this.player);
+      }
+
 
       console.log(this.state);
       const cardToFaceDown = store.cards[this.state.players[this.player].faceDownCard?.number];
@@ -26,6 +47,8 @@ export default class Logic {
         repositionHandAttractor(i, hand.length);
         store.handAttractors[i].getComponent(Attractor)?.attract(store.cards[hand[i].number]);
       }
+
+      // todo: enable / disable placeholders
     } catch (err) {
 
     }

@@ -27,7 +27,7 @@ export default function Attractor() {
       const position = geometry.position!;
       const physics = attractee.getComponent(Physics.Body)!;
       const positionDiff = mainGeo.position.subtract(position);
-      const force = positionDiff.multiply(0.2 * ms / 1000000);
+      const force = positionDiff.multiply(0.5 / 100000);
       const rotationDiff = mainGeo.rotation - geometry.rotation;
       const magnitude = positionDiff.magnitude;
 
@@ -35,6 +35,9 @@ export default function Attractor() {
         physics.setVelocity(new Vector(0, 0));
         physics.setPosition(mainGeo.position.clone());
       } else {
+        if (magnitude < 500) {
+          force.multiplyMutate(500 / magnitude);
+        }
         physics.applyForce(position, force);
       }
       if (Math.abs(rotationDiff) < 0.02) {

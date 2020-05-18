@@ -8,6 +8,7 @@ interface PlaceholderData {
   player?: number;
   row?: number;
   position?: number;
+  enabled: boolean;
 }
 
 export default function Placeholder(position: Vector, kind: PlaceholderKind) {
@@ -19,7 +20,8 @@ export default function Placeholder(position: Vector, kind: PlaceholderKind) {
   }));
 
   const data: PlaceholderData = {
-    kind: "facedown"
+    kind: "facedown",
+    enabled: false
   };
 
   const physics = useNewComponent(() => Physics.Body(geometry, {isSensor: true}));
@@ -33,7 +35,7 @@ export default function Placeholder(position: Vector, kind: PlaceholderKind) {
 
     const dragged = store.dragged;
 
-    if (kind === "facedown" && dragged && Bounds.overlaps(physics.body.bounds, dragged!.getComponent(Physics.Body)!.body.bounds)) {
+    if (data.enabled && dragged && Bounds.overlaps(physics.body.bounds, dragged!.getComponent(Physics.Body)!.body.bounds)) {
       context.fillStyle = "#ffffff22";
     }
     geometry.shape.draw(context, "fill");

@@ -55,6 +55,8 @@ export default function Root() {
   rootData.placeholders.player = useChild(() => Placeholder(canvasCenter.addY(170).addXMutate(-220), "facedown"));
   useChild(() => PlayerLabel(canvasCenter.addY(210), logic.state.players[0], rootData.playerShown));
 
+  rootData.placeholders.player.getComponent(Placeholder)!.data.enabled = true;
+
   for (let i = 0; i < logic.state.rows.length; i++) {
     const row: typeof rootData.placeholders.rows[0] = [];
 
