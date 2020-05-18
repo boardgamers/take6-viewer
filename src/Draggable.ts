@@ -6,11 +6,11 @@ import {
   Physics,
   Mouse,
   Vector,
-  useRootEntity,
   useCurrentComponent,
 } from "@hex-engine/2d";
-import Root, { store } from "./Root";
+import { store } from "./Root";
 import { EventEmitter } from "events";
+import Card from "./Card";
 
 export default function Draggable(geometry: ReturnType<typeof Geometry>) {
   useType(Draggable);

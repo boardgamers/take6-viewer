@@ -17,7 +17,7 @@ export default function PlayerLabel(position: Vector, player: Player, playerInde
 
   const geometry = useNewComponent(() =>
     Geometry({
-      shape: Polygon.rectangle(new Vector(120, 30)),
+      shape: Polygon.rectangle(new Vector(85, 20)),
       position: position.clone(),
     })
   );

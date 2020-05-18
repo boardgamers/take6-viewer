@@ -7,7 +7,7 @@ import { repositionHandAttractor, overlaps } from "./positioning";
 
 export default class Logic {
   constructor() {
-    this.state = setup(2, {}, "");
+    this.state = setup(7, {}, "");
     this.player = 0;
   }
 
@@ -25,7 +25,7 @@ export default class Logic {
         if (!commands.chooseCard.some(card => card.number === cardData.number)) {
           return;
         }
-        if (!overlaps(card, store.placeholders.player)) {
+        if (!overlaps(card, store.placeholders.players[this.player])) {
           return;
         }
 
@@ -39,7 +39,7 @@ export default class Logic {
       console.log(this.state);
       const cardToFaceDown = store.cards[this.state.players[this.player].faceDownCard?.number];
       if (cardToFaceDown) {
-        store.placeholders.player?.getComponent(Attractor)?.attract(cardToFaceDown);
+        store.placeholders.players[this.player]?.getComponent(Attractor)?.attract(cardToFaceDown);
       }
 
       const hand = this.state.players[this.player].hand;

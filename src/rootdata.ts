@@ -2,9 +2,8 @@ import { Entity, Component, Canvas } from "@hex-engine/2d";
 import Attractor from "./Attractor";
 
 export interface RootData {
-  playerShown: number,
   placeholders: {
-    player?: Entity
+    players: {[key: number]: Entity}
     rows: Entity[][]
   },
   dragged?: Entity;

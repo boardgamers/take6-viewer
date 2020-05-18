@@ -15,6 +15,7 @@ import Placeholder from "./Placeholder";
 import { RootData } from "./rootdata";
 import Logic from "./logic";
 import { repositionHandAttractor } from "./positioning";
+import { range } from "lodash";
 
 let store: RootData;
 let logic: Logic;
@@ -38,8 +39,8 @@ export default function Root() {
   logic = new Logic();
 
   const rootData: RootData = {
-    playerShown: 0,
     placeholders: {
+      players: {},
       rows: [],
     },
     cards: {
@@ -52,10 +53,18 @@ export default function Root() {
 
   store = rootData;
 
-  rootData.placeholders.player = useChild(() => Placeholder(canvasCenter.addY(170).addXMutate(-220), "facedown"));
-  useChild(() => PlayerLabel(canvasCenter.addY(210), logic.state.players[0], rootData.playerShown));
+  rootData.placeholders.players[logic.player] = useChild(() => Placeholder(canvasCenter.addY(170).addXMutate(-220), "facedown"));
+  useChild(() => PlayerLabel(canvasCenter.addY(210), logic.state.players[logic.player], logic.player));
 
-  rootData.placeholders.player.getComponent(Placeholder)!.data.enabled = true;
+  rootData.placeholders.players[logic.player].getComponent(Placeholder)!.data.enabled = true;
+
+  for (const entry of Object.entries(range(0, logic.state.players.length).filter(pl => pl !== logic.player))) {
+    const index = + entry[0];
+    const player = entry[1];
+
+    rootData.placeholders.players[player] = useChild(() => Placeholder(canvasCenter.addY(-163 + 110 * Math.floor(index /2)).addXMutate(120 + 145 * (index % 2)), "facedown"));
+    useChild(() => PlayerLabel(canvasCenter.addY(-218 + 110 * Math.floor(index /2)).addXMutate(120 + 145 * (index % 2)), logic.state.players[player], player));
+  }
 
   for (let i = 0; i < logic.state.rows.length; i++) {
     const row: typeof rootData.placeholders.rows[0] = [];
