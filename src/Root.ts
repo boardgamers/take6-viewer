@@ -33,14 +33,9 @@ export default function Root() {
   const engine = useNewComponent(Physics.Engine);
   engine.engine.world.gravity.y = 0;
 
-  const canvasCenter = new Vector(
-    canvas.element.width / 2,
-    canvas.element.height / 2
-  );
-
   logic = new Logic();
 
-  const center = useChild(() => CanvasCenter());
+  const center = useChild(CanvasCenter);
 
   const rootData: RootData = {
     placeholders: {
@@ -122,4 +117,6 @@ export default function Root() {
       root.children.delete(entity);
     }
   }
+
+  logic.updateUI();
 }

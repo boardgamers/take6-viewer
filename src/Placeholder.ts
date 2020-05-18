@@ -41,7 +41,7 @@ export default function Placeholder(position: Vector, kind: PlaceholderKind) {
     geometry.shape.draw(context, "fill");
   });
 
-  useNewComponent(() => Attractor());
+  useNewComponent(Attractor);
 
   return {
     data

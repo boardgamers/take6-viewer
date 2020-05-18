@@ -66,6 +66,7 @@ export default function Attractor() {
       if (store.attractedBy.get(entity) === self) {
         store.attractedBy.delete(entity);
       }
-    }
+    },
+    attractees
   }
 }
