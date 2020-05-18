@@ -1,4 +1,4 @@
-import { Entity, Component } from "@hex-engine/2d";
+import { Entity, Component, Canvas } from "@hex-engine/2d";
 import Attractor from "./Attractor";
 
 export interface RootData {
@@ -12,5 +12,6 @@ export interface RootData {
     [key: number]: Entity
   },
   handAttractors: Entity[],
+  canvas: ReturnType<typeof Canvas>,
   attractedBy: WeakMap<Entity, Component & ReturnType<typeof Attractor>>;
 }

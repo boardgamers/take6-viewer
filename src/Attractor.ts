@@ -59,7 +59,6 @@ export default function Attractor() {
       store.attractedBy.set(entity, this);
     },
     unlink(entity: Entity) {
-      console.log("unlinking");
       attractees.delete(entity);
       if (store.attractedBy.get(entity) === self) {
         store.attractedBy.delete(entity);

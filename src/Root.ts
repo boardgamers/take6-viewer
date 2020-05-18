@@ -14,6 +14,7 @@ import PlayerLabel from "./PlayerLabel";
 import Placeholder from "./Placeholder";
 import { RootData } from "./rootdata";
 import Logic from "./logic";
+import { repositionHandAttractor } from "./positioning";
 
 let store: RootData;
 let logic: Logic;
@@ -45,7 +46,8 @@ export default function Root() {
 
     },
     attractedBy: new WeakMap(),
-    handAttractors: []
+    handAttractors: [],
+    canvas
   };
 
   store = rootData;
@@ -79,12 +81,14 @@ export default function Root() {
     const attractor = useChild(() => {
       useNewComponent(() => Attractor());
       useNewComponent(() => Geometry({
-        position: new Vector(0, -800).rotateMutate(-(i-(hand.length-1)/2) * 0.04).addMutate(canvasCenter).addYMutate(950),
-        shape: new Polygon([]),
-        rotation: (i - 4.5) * 0.03
+        shape: new Polygon([])
       }));
     });
     attractor.getComponent(Attractor)!.attract(child);
     rootData.handAttractors.unshift(attractor);
+  }
+
+  for (let i = 0; i < hand.length; i++) {
+    repositionHandAttractor(i, hand.length);
   }
 }
