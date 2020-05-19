@@ -71,10 +71,14 @@ export default class Logic {
             store.placeholders.players[player]?.getComponent(Attractor)?.attract(entity);
           });
         } else {
-          store.canvasCenter.getComponent(CanvasCenter)?.run(() => {
-            const entity = useChild(() => Card(store.placeholders.players[player].getComponent(Geometry)?.position!, this.state.players[player].faceDownCard));
-            store.placeholders.players[player]?.getComponent(Attractor)?.attract(entity);
-          });
+          if (!store.cards[cardNumber]) {
+            store.canvasCenter.getComponent(CanvasCenter)?.run(() => {
+              const entity = useChild(() => Card(store.placeholders.players[player].getComponent(Geometry)?.position!, this.state.players[player].faceDownCard));
+              store.placeholders.players[player]?.getComponent(Attractor)?.attract(entity);
+            });
+          } else {
+            store.placeholders.players[player]?.getComponent(Attractor)?.attract(store.cards[cardNumber]);
+          }
         }
       } else {
         // Remove existing card
