@@ -10,7 +10,6 @@ import {
 } from "@hex-engine/2d";
 import { store } from "./Root";
 import { EventEmitter } from "events";
-import Card from "./Card";
 
 export default function Draggable(geometry: ReturnType<typeof Geometry>) {
   useType(Draggable);

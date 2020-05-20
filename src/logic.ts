@@ -1,6 +1,6 @@
 import { range } from "lodash";
 import { GameState, setup, move, MoveName, moveAI } from "take6-engine";
-import { Entity, useNewComponent, Geometry, useCurrentComponent, Vector, useChild, useRootEntity } from "@hex-engine/2d";
+import { Entity, Geometry, useChild } from "@hex-engine/2d";
 import Card from "./Card";
 import { store } from "./Root";
 import Attractor from "./Attractor";
