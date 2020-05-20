@@ -18,6 +18,7 @@ import Logic from "./logic";
 import { repositionHandAttractor } from "./positioning";
 import { range } from "lodash";
 import CanvasCenter from "./CanvasCenter";
+import Runner from "./Runner";
 
 let store: RootData;
 let logic: Logic;
@@ -35,7 +36,10 @@ export default function Root() {
 
   logic = new Logic();
 
-  const center = useChild(CanvasCenter);
+  const center = useChild(() => {
+    useNewComponent(CanvasCenter);
+    useNewComponent(Runner);
+  });
 
   const rootData: RootData = {
     placeholders: {

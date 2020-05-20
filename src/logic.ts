@@ -7,6 +7,7 @@ import Attractor from "./Attractor";
 import { repositionHandAttractor, overlaps } from "./positioning";
 import { stripSecret } from "take6-engine/src/engine";
 import CanvasCenter from "./CanvasCenter";
+import Runner from "./Runner";
 
 export default class Logic {
   constructor() {
@@ -66,13 +67,13 @@ export default class Logic {
           }
         }
         if (cardNumber === 0) {
-          store.canvasCenter.getComponent(CanvasCenter)?.run(() => {
+          store.canvasCenter.getComponent(Runner)?.run(() => {
             const entity = useChild(() => Card(store.placeholders.players[player].getComponent(Geometry)?.position!, {number: 0, points: 0}));
             store.placeholders.players[player]?.getComponent(Attractor)?.attract(entity);
           });
         } else {
           if (!store.cards[cardNumber]) {
-            store.canvasCenter.getComponent(CanvasCenter)?.run(() => {
+            store.canvasCenter.getComponent(Runner)?.run(() => {
               const entity = useChild(() => Card(store.placeholders.players[player].getComponent(Geometry)?.position!, this.state.players[player].faceDownCard));
               store.placeholders.players[player]?.getComponent(Attractor)?.attract(entity);
             });
