@@ -14,4 +14,5 @@ export interface RootData {
   canvas: ReturnType<typeof Canvas>,
   canvasCenter: Entity,
   attractedBy: WeakMap<Entity, Component & ReturnType<typeof Attractor>>;
+  waitingAnimations: number;
 }

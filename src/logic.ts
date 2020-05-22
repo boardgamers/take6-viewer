@@ -6,7 +6,6 @@ import { store } from "./Root";
 import Attractor from "./Attractor";
 import { repositionHandAttractor, overlaps } from "./positioning";
 import { stripSecret } from "take6-engine/src/engine";
-import CanvasCenter from "./CanvasCenter";
 import Runner from "./Runner";
 
 export default class Logic {
@@ -38,22 +37,32 @@ export default class Logic {
       this.#state = move(this.#state, {name: MoveName.ChooseCard, data: cardData}, this.player);
     }
 
-    this.updateUI();
+    this.updateUI(false);
   }
 
-  updateUI() {
-    while (this.#state.players.filter(pl => pl !== this.#state.players[this.player]).some(pl => pl.availableMoves)) {
-      this.#state = moveAI(this.#state, this.#state.players.indexOf(this.#state.players.filter(pl => pl !== this.#state.players[this.player]).find(pl => !!pl.availableMoves)!));
+  get canAIMove() {
+    return this.#state.players.filter(pl => pl !== this.#state.players[this.player]).some(pl => pl.availableMoves);
+  }
+
+  get AIThatCanMove() {
+    return this.#state.players.indexOf(this.#state.players.filter(pl => pl !== this.#state.players[this.player]).find(pl => !!pl.availableMoves)!);
+  }
+
+  updateUI(auto = true) {
+    console.log("updated UI", auto, store.waitingAnimations, this.canAIMove);
+    if (auto && store.waitingAnimations === 0 && this.canAIMove) {
+      this.#state = moveAI(this.#state, this.AIThatCanMove);
     }
 
     // console.log(this.#state);
     for (const player of range(0, this.state.players.length)) {
+      const placeholder = store.placeholders.players[player];
       const cardNumber = this.state.players[player].faceDownCard?.number;
-      const attractees: Entity[] = [...store.placeholders.players[player]?.getComponent(Attractor)!.attractees];
+      const attractees: Entity[] = [...placeholder?.getComponent(Attractor)!.attractees];
       const existingCardEntity = attractees?.find(entity => entity.getComponent(Card));
       const existingCard = existingCardEntity?.getComponent(Card)?.card;
 
-      console.log(player, existingCard?.number, cardNumber);
+      // console.log(player, existingCard?.number, cardNumber);
       if (existingCard?.number === cardNumber) {
         continue;
       }
@@ -68,17 +77,20 @@ export default class Logic {
         }
         if (cardNumber === 0) {
           store.canvasCenter.getComponent(Runner)?.run(() => {
-            const entity = useChild(() => Card(store.placeholders.players[player].getComponent(Geometry)?.position!, {number: 0, points: 0}));
+            const entity = useChild(() => Card(placeholder.getComponent(Geometry)?.position!, {number: 0, points: 0}));
             store.placeholders.players[player]?.getComponent(Attractor)?.attract(entity);
           });
+          this.stackAnimation(200);
         } else {
           if (!store.cards[cardNumber]) {
             store.canvasCenter.getComponent(Runner)?.run(() => {
-              const entity = useChild(() => Card(store.placeholders.players[player].getComponent(Geometry)?.position!, this.state.players[player].faceDownCard));
-              store.placeholders.players[player]?.getComponent(Attractor)?.attract(entity);
+              const entity = useChild(() => Card(placeholder.getComponent(Geometry)?.position!, this.state.players[player].faceDownCard));
+              placeholder?.getComponent(Attractor)?.attract(entity);
             });
+            this.stackAnimation(200);
           } else {
-            store.placeholders.players[player]?.getComponent(Attractor)?.attract(store.cards[cardNumber]);
+            placeholder?.getComponent(Attractor)?.attract(store.cards[cardNumber]);
+            // TODO: animation on attract
           }
         }
       } else {
@@ -91,6 +103,38 @@ export default class Logic {
       }
     }
 
+    for (let i = 0; i < store.placeholders.rows.length; i++) {
+      for (let j = 0; j < store.placeholders.rows[i].length; j++) {
+        const placeholder = store.placeholders.rows[i][j];
+        const card = this.state.rows[i][j];
+        const cardNumber = card?.number;
+        const attractees: Entity[] = [...placeholder?.getComponent(Attractor)!.attractees];
+        const existingCardEntity = attractees?.find(entity => entity.getComponent(Card));
+        const existingCard = existingCardEntity?.getComponent(Card)?.card;
+
+        // console.log(player, existingCard?.number, cardNumber);
+        if (existingCard?.number === cardNumber) {
+          continue;
+        }
+
+        if (cardNumber !== undefined) {
+          if (!store.cards[cardNumber]) {
+            store.canvasCenter.getComponent(Runner)?.run(() => {
+              const entity = useChild(() => Card(placeholder.getComponent(Geometry)?.position!, card));
+              placeholder?.getComponent(Attractor)?.attract(entity);
+            });
+            // this.stackAnimation(200);
+          } else {
+            placeholder?.getComponent(Attractor)?.attract(store.cards[cardNumber]);
+            // TODO: animation on attract
+          }
+        } else {
+          // Remove existing card
+          existingCardEntity!.destroy();
+        }
+      }
+    }
+
     const hand = this.state.players[this.player].hand;
     for (let i = 0; i < hand.length; i++) {
       repositionHandAttractor(i, hand.length);
@@ -98,10 +142,30 @@ export default class Logic {
     }
 
     // todo: enable / disable placeholders
+
+    if (store.waitingAnimations === 0 && this.canAIMove) {
+      setTimeout(() => this.updateUI());
+    }
+
+    console.log(this.state);
   }
 
   get state() {
     return stripSecret(this.#state, this.player);
+  }
+
+  stackAnimation(delay: number) {
+    store.waitingAnimations += 1;
+
+    setTimeout(() => this.onAnimationFinished(), delay);
+  }
+
+  onAnimationFinished() {
+    store.waitingAnimations = Math.max(store.waitingAnimations - 1, 0);
+
+    if (store.waitingAnimations === 0) {
+      this.updateUI();
+    }
   }
 
   #state: GameState;

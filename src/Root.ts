@@ -52,7 +52,8 @@ export default function Root() {
     attractedBy: new WeakMap(),
     handAttractors: [],
     canvas,
-    canvasCenter: center
+    canvasCenter: center,
+    waitingAnimations: 0
   };
 
   store = rootData;
