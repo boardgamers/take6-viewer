@@ -154,10 +154,12 @@ export default class Logic {
     return stripSecret(this.#state, this.player);
   }
 
-  stackAnimation(delay: number) {
+  stackAnimation(delay: number = 0) {
     store.waitingAnimations += 1;
 
-    setTimeout(() => this.onAnimationFinished(), delay);
+    if (delay) {
+      setTimeout(() => this.onAnimationFinished(), delay);
+    }
   }
 
   onAnimationFinished() {

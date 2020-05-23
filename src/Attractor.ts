@@ -9,7 +9,7 @@ import {
   useCurrentComponent,
   Component,
 } from "@hex-engine/2d";
-import { store } from "./Root";
+import { store, logic } from "./Root";
 
 export default function Attractor() {
   useType(Attractor as any);
@@ -31,7 +31,10 @@ export default function Attractor() {
       const rotationDiff = mainGeo.rotation - geometry.rotation;
       const magnitude = positionDiff.magnitude;
 
-      if (magnitude < 1 || (positionDiff.x*physics.body.velocity.x + positionDiff.y * physics.body.velocity.y) < 0) {
+      let reachedPosition = magnitude < 1 || (positionDiff.x*physics.body.velocity.x + positionDiff.y * physics.body.velocity.y) < 0;
+      let reachedRotation = Math.abs(rotationDiff) < 0.02;
+
+      if (reachedPosition) {
         physics.setVelocity(new Vector(0, 0));
         physics.setPosition(mainGeo.position.clone());
       } else {
@@ -40,7 +43,7 @@ export default function Attractor() {
         }
         physics.applyForce(position, force);
       }
-      if (Math.abs(rotationDiff) < 0.02) {
+      if (reachedRotation) {
         physics.setAngle(mainGeo.rotation);
         physics.setAngularVelocity(0);
       } else {
@@ -49,10 +52,16 @@ export default function Attractor() {
       if (!geometry.scale.equals(mainGeo.scale)) {
         geometry.scale.mutateInto(mainGeo.scale);
       }
+
+      if (reachedRotation && reachedPosition && !reachedDestination.has(attractee)) {
+        reachedDestination.add(attractee);
+        logic.onAnimationFinished();
+      }
     }
   });
 
   const attractees = new Set<Entity>();
+  const reachedDestination = new Set<Entity>();
   const self = useCurrentComponent();
 
   return {
@@ -60,9 +69,21 @@ export default function Attractor() {
       store.attractedBy.get(entity)?.unlink(entity);
       attractees.add(entity);
       store.attractedBy.set(entity, this);
+
+      if (!reachedDestination.has(entity)) {
+        logic.stackAnimation();
+      }
     },
     unlink(entity: Entity) {
       attractees.delete(entity);
+
+      if (reachedDestination.has(entity)) {
+        reachedDestination.delete(entity);
+      } else {
+        // We stopped the animation midway, so we need to indicate
+        setTimeout(() => logic.onAnimationFinished());
+      }
+
       if (store.attractedBy.get(entity) === self) {
         store.attractedBy.delete(entity);
       }
