@@ -60,6 +60,15 @@ export default function Card(position: Vector, card: ICard) {
       label.text = card.number.toString();
       label.draw(context, {x: (geometry.shape.width - label.size.x) / 2, y: (geometry.shape.height - label.size.y) / 2 + 2});
     }
+
+    if (card.points) {
+      for (let i = 0; i < card.points; i++) {
+        context.fillStyle = "red";
+        const j = (i % 2 === 0) ? 3 - Math.ceil(i/2) : 3 + Math.ceil(i/2);
+        context.fillRect(5, 5 + j*7.5, 5, 5);
+        context.fillRect(30, 5 + j*7.5, 5, 5);
+      }
+    }
   });
 
   if (card.number) {
