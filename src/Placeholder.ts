@@ -2,6 +2,7 @@ import { Vector, useNewComponent, Geometry, Polygon, useDraw, Physics, useRootEn
 import { Bounds } from "matter-js";
 import Attractor from "./Attractor";
 import { store } from "./Root";
+import { resolution } from "./constants";
 
 interface PlaceholderData {
   kind: "facedown" | "board";
@@ -16,7 +17,7 @@ export default function Placeholder(position: Vector, kind: PlaceholderKind) {
 
   const geometry = useNewComponent(() => Geometry({
     position: position.clone(),
-    shape: Polygon.rectangle(50, 70)
+    shape: Polygon.rectangle(50 * resolution, 70 * resolution)
   }));
 
   const data: PlaceholderData = {

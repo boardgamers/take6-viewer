@@ -19,6 +19,7 @@ import { repositionHandAttractor } from "./positioning";
 import { range } from "lodash";
 import CanvasCenter from "./CanvasCenter";
 import Runner from "./Runner";
+import { resolution } from "./constants";
 
 let store: RootData;
 let logic: Logic;
@@ -29,7 +30,7 @@ export default function Root() {
   useType(Root);
 
   const canvas = useNewComponent(() => Canvas({ backgroundColor: "#444" }));
-  canvas.fullscreen({ pixelZoom: 2 });
+  canvas.fullscreen({ pixelZoom: 1 });
 
   const engine = useNewComponent(Physics.Engine);
   engine.engine.world.gravity.y = 0;
@@ -58,8 +59,8 @@ export default function Root() {
 
   store = rootData;
 
-  rootData.placeholders.players[logic.player] = useChild(() => Placeholder(new Vector(-220, 170), "facedown"));
-  useChild(() => PlayerLabel(new Vector(0, 210), logic.state.players[logic.player], logic.player));
+  rootData.placeholders.players[logic.player] = useChild(() => Placeholder(new Vector(-220, 170).multiplyMutate(resolution), "facedown"));
+  useChild(() => PlayerLabel(new Vector(0, 210).multiplyMutate(resolution), logic.state.players[logic.player], logic.player));
 
   rootData.placeholders.players[logic.player].getComponent(Placeholder)!.data.enabled = true;
 
@@ -68,11 +69,11 @@ export default function Root() {
     const player = entry[1];
 
     if (index <= 5) {
-      rootData.placeholders.players[player] = useChild(() => Placeholder(new Vector(173 + 145 * (index % 2), -163 + 110 * Math.floor(index /2)), "facedown"));
-      useChild(() => PlayerLabel(new Vector(173 + 145 * (index % 2), -218 + 110 * Math.floor(index /2)), logic.state.players[player], player));
+      rootData.placeholders.players[player] = useChild(() => Placeholder(new Vector(173 + 145 * (index % 2), -163 + 110 * Math.floor(index /2)).multiplyMutate(resolution), "facedown"));
+      useChild(() => PlayerLabel(new Vector(173 + 145 * (index % 2), -218 + 110 * Math.floor(index /2)).multiplyMutate(resolution), logic.state.players[player], player));
     } else {
-      rootData.placeholders.players[player] = useChild(() => Placeholder(new Vector(-317, -163 + 110 * (index - 6)), "facedown"));
-      useChild(() => PlayerLabel(new Vector(-317, -218 + 110 * (index - 6)), logic.state.players[player], player));
+      rootData.placeholders.players[player] = useChild(() => Placeholder(new Vector(-317, -163 + 110 * (index - 6)).multiplyMutate(resolution), "facedown"));
+      useChild(() => PlayerLabel(new Vector(-317, -218 + 110 * (index - 6)).multiplyMutate(resolution), logic.state.players[player], player));
     }
   }
 
@@ -81,7 +82,7 @@ export default function Root() {
 
     rootData.placeholders.rows.push(row);
     for (let j = 0; j < 6; j++) {
-      const pos = new Vector(-203 + j * 55, (i - 1.5) * 80 - 75);
+      const pos = new Vector(-203 + j * 55, (i - 1.5) * 80 - 75).multiplyMutate(resolution);
 
       const placeholder = useChild(() => Placeholder(pos, j === 5 ? "danger" : "default"));
       row.push(placeholder);
@@ -97,7 +98,7 @@ export default function Root() {
   const hand = logic.state.players[0].hand;
 
   for (let i = hand.length - 1; i >= 0; i--) {
-    const child = useChild(() => Card(new Vector((i-(hand.length-1)/2)*45, 0), hand[i]));
+    const child = useChild(() => Card(new Vector((i-(hand.length-1)/2)*45, 0).multiplyMutate(resolution), hand[i]));
 
     const attractor = useChild(() => {
       useNewComponent(() => Attractor());

@@ -1,11 +1,12 @@
 import { store } from "./Root";
 import { Vector, Geometry, Entity, Physics } from "@hex-engine/2d";
 import { Bounds } from "matter-js";
+import { resolution } from "./constants";
 
 export function repositionHandAttractor(index: number, handLength: number) {
   const geo = store.handAttractors[index].getComponent(Geometry)!;
 
-  geo.position.mutateInto(new Vector(0, -800).rotateMutate(-(index-(handLength-1)/2) * 0.04).addYMutate(950));
+  geo.position.mutateInto(new Vector(0, -800).multiplyMutate(resolution).rotateMutate(-(index-(handLength-1)/2) * 0.04).addYMutate(950 * resolution));
   geo.rotation = (index - (handLength - 1)/2) * 0.03;
 }
 

@@ -11,6 +11,7 @@ import {
   Mouse,
 } from "@hex-engine/2d";
 import { Player } from "take6-engine";
+import { resolution } from "./constants";
 
 export default function PlayerLabel(position: Vector, player: Player, playerIndex: number) {
   useType(PlayerLabel);
@@ -22,7 +23,7 @@ export default function PlayerLabel(position: Vector, player: Player, playerInde
     })
   );
 
-  const font = useNewComponent(() => SystemFont({name: "sans-serif", size: 12}))
+  const font = useNewComponent(() => SystemFont({name: "sans-serif", size: 12 * resolution}))
   const label = useNewComponent(() => Label({font}));
 
   useDraw((context) => {
@@ -36,12 +37,12 @@ export default function PlayerLabel(position: Vector, player: Player, playerInde
 
     font.color = playerIndex === 0 ? "orange" : "#000";
     if (playerIndex === 0) {
-      context.shadowBlur = 1;
-      context.shadowOffsetX = 1;
-      context.shadowOffsetY = 1;
+      context.shadowBlur = 1 * resolution;
+      context.shadowOffsetX = 1 * resolution;
+      context.shadowOffsetY = 1 * resolution;
       context.shadowColor = `rgba(255, 255, 255, ${playerIndex === 0 ? 0.4 : 0.2})`;
     }
     label.text = player.name ?? `Player ${playerIndex + 1}`;
-    label.draw(context, {x: (geometry.shape.width - label.size.x) / 2, y: (geometry.shape.height - label.size.y) / 2 + 2});
+    label.draw(context, {x: (geometry.shape.width - label.size.x) / 2, y: (geometry.shape.height - label.size.y) / 2 + 2* resolution});
   });
 }

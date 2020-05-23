@@ -12,6 +12,7 @@ import {
 } from "@hex-engine/2d";
 import { store, logic } from "./Root";
 import Runner from "./Runner";
+import { resolution } from "./constants";
 
 export default function Attractor() {
   useType(Attractor as any);
@@ -29,7 +30,7 @@ export default function Attractor() {
       const position = geometry.position!;
       const physics = attractee.getComponent(Physics.Body)!;
       const positionDiff = mainGeo.position.subtract(position);
-      const force = positionDiff.multiply(0.5 / 100000);
+      const force = positionDiff.multiply(0.5 * resolution / 100000);
       const rotationDiff = mainGeo.rotation - geometry.rotation;
       const magnitude = positionDiff.magnitude;
 
@@ -40,8 +41,8 @@ export default function Attractor() {
         physics.setVelocity(new Vector(0, 0));
         physics.setPosition(mainGeo.position.clone());
       } else {
-        if (magnitude < 500) {
-          force.multiplyMutate(500 / magnitude);
+        if (magnitude < 500 * resolution) {
+          force.multiplyMutate(500 * resolution / magnitude);
         }
         physics.applyForce(position, force);
       }
