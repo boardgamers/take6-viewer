@@ -6,6 +6,7 @@ import { store } from "./Root";
 import Attractor from "./Attractor";
 import { repositionHandAttractor, overlaps } from "./positioning";
 import Runner from "./Runner";
+import Placeholder from "./Placeholder";
 
 export default class Logic {
   constructor() {
@@ -32,12 +33,24 @@ export default class Logic {
       }
 
       this.#state = move(this.#state, {name: MoveName.ChooseCard, data: cardData}, this.player);
+      this.updateAvailableMoves();
     } else if (commands.placeCard) {
-      // Todo : proper move
-      this.#state = move(this.#state, {name: MoveName.ChooseCard, data: cardData}, this.player);
+      for (const data of commands.placeCard) {
+        if (store.placeholders.rows[data.row].some(placeholder => placeholder.getComponent(Placeholder)!.data.enabled && overlaps(card, placeholder))) {
+          this.#state = move(this.#state, {name: MoveName.PlaceCard, data}, this.player);
+          this.updateAvailableMoves();
+          break;
+        }
+      }
     }
 
-    this.updateUI(false);
+    this.updateUI();
+  }
+
+  updateAvailableMoves() {
+    if (this.player !== undefined) {
+      this.state.players[this.player].availableMoves = cloneDeep(this.#state.players[this.player].availableMoves);
+    }
   }
 
   get canAIMove() {
@@ -148,7 +161,7 @@ export default class Logic {
     }
   }
 
-  updateUI(auto = true) {
+  updateUI() {
     if (store.waitingAnimations) {
       console.log("waiting animations", store.waitingAnimations);
       return;
@@ -166,13 +179,32 @@ export default class Logic {
       return;
     }
 
-    console.log("updated UI", auto, this.canAIMove, this.AIThatCanMove);
-    if (auto && this.canAIMove) {
+    console.log("updated UI", this.canAIMove, this.AIThatCanMove);
+    if (this.canAIMove) {
       this.#state = moveAI(this.#state, this.AIThatCanMove);
+      this.updateAvailableMoves();
       this.delay(0);
     }
 
-    // todo: enable / disable placeholders
+    const allPlaceholders: Entity[] = [...Object.values(store.placeholders.players), ...store.placeholders.rows.flat(1)];
+    for (const placeholder of allPlaceholders) {
+      placeholder.getComponent(Placeholder)!.data.enabled = false;
+    }
+
+
+    if (this.#state.players[this.player]?.availableMoves) {
+      if(this.#state.players[this.player].availableMoves![MoveName.ChooseCard]) {
+        store.placeholders.players[this.player].getComponent(Placeholder)!.data.enabled = true;
+      } else if (this.#state.players[this.player].availableMoves![MoveName.PlaceCard]) {
+        for (const data of this.#state.players[this.player].availableMoves![MoveName.PlaceCard]!) {
+          if (data.replace) {
+            store.placeholders.rows[data.row].slice(-1)[0].getComponent(Placeholder)!.data.enabled = true;
+          } else {
+            store.placeholders.rows[data.row][this.state.rows[data.row].length].getComponent(Placeholder)!.data.enabled = true;
+          }
+        }
+      }
+    }
   }
 
   queueAnimation(fn: () => any) {
