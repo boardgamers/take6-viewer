@@ -55,6 +55,7 @@ export default function Card(position: Vector, card: ICard) {
     }
     geometry.shape.draw(context, "fill");
     context.strokeStyle = "red";
+    context.lineWidth = 1 * resolution;
     geometry.shape.draw(context, "stroke");
 
     if (card.number) {

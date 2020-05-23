@@ -98,7 +98,7 @@ export default class Logic {
             const card = this.state.players[player].faceDownCard;
             if (move.data.replace) {
               // put new card on 6th spot
-              const placeholder = store.placeholders.rows[move.data.row][5];
+              const placeholder = store.placeholders.rows[move.data.row].slice(-1)[0];
               placeholder.getComponent(Attractor).attract(store.cards[card.number]);
 
               this.queueAnimation(() => this.delay(200));

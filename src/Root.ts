@@ -30,7 +30,7 @@ export default function Root() {
   useType(Root);
 
   const canvas = useNewComponent(() => Canvas({ backgroundColor: "#444" }));
-  canvas.fullscreen({ pixelZoom: 1 });
+  canvas.fullscreen({ pixelZoom: 2 / resolution });
 
   const engine = useNewComponent(Physics.Engine);
   engine.engine.world.gravity.y = 0;
