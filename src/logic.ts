@@ -1,4 +1,4 @@
-import { cloneDeep } from "lodash";
+import { cloneDeep, sumBy } from "lodash";
 import { GameState, setup, move, MoveName, moveAI, stripSecret, GameEventName } from "take6-engine";
 import { Entity, Geometry, useChild } from "@hex-engine/2d";
 import Card from "./Card";
@@ -107,6 +107,7 @@ export default class Logic {
                 for (const card of this.state.rows[move.data.row]) {
                   store.cards[card.number].destroy();
                 }
+                this.state.players[player].points += sumBy(this.state.rows[move.data.row], "points");
                 this.state.rows[move.data.row] = [];
               });
               this.queueAnimation(() => this.delay(300));
