@@ -8,8 +8,10 @@ import {
   useEntity,
   useCurrentComponent,
   Component,
+  useDestroy,
 } from "@hex-engine/2d";
 import { store, logic } from "./Root";
+import Runner from "./Runner";
 
 export default function Attractor() {
   useType(Attractor as any);
@@ -62,7 +64,13 @@ export default function Attractor() {
 
   const attractees = new Set<Entity>();
   const reachedDestination = new Set<Entity>();
-  const self = useCurrentComponent();
+  const self: Component & ReturnType<typeof Attractor> = useCurrentComponent();
+
+  useDestroy().onDestroy(() => {
+    for (const entity of [...attractees]) {
+      self.unlink(entity);
+    }
+  });
 
   return {
     attract(this: Component & ReturnType<typeof Attractor>, entity: Entity) {
@@ -73,6 +81,8 @@ export default function Attractor() {
       if (!reachedDestination.has(entity)) {
         logic.stackAnimation();
       }
+
+      entity.getComponent(Runner)?.run(() => useDestroy().onDestroy(() => self.unlink(entity)));
     },
     unlink(entity: Entity) {
       attractees.delete(entity);

@@ -11,14 +11,20 @@ import {
   useEntity,
   Mouse,
   useCurrentComponent,
+  useDestroy,
 } from "@hex-engine/2d";
 import Draggable from "./Draggable";
 import { Card as ICard } from "take6-engine";
 import {logic, store} from "./Root";
+import Runner from "./Runner";
 
 export default function Card(position: Vector, card: ICard) {
   useType(Card);
   const self = useCurrentComponent();
+
+  if (!useEntity().getComponent(Runner)) {
+    useNewComponent(Runner);
+  }
 
   const geometry = useNewComponent(() =>
     Geometry({
@@ -57,7 +63,13 @@ export default function Card(position: Vector, card: ICard) {
   });
 
   if (card.number) {
-    store.cards[card.number] = useEntity();
+    const entity = useEntity();
+    store.cards[card.number] = entity;
+    useDestroy().onDestroy(() => {
+      if (store.cards[card.number] === entity) {
+        delete store.cards[card.number];
+      }
+    });
   }
 
   return {
