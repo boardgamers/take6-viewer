@@ -22,8 +22,19 @@ export default function PlayerLabel(position: Vector, player: Player, playerInde
     })
   );
 
-  const font = useNewComponent(() => SystemFont({name: "sans-serif", size: 12 * resolution}))
+  const font = useNewComponent(() => SystemFont({
+    name: "sans-serif",
+    size: ( 12  - (playerIndex !== logic.player ? 1 : 0)) * resolution,
+    color: playerIndex === logic.player ? "orange" : "#000"
+  }));
   const label = useNewComponent(() => Label({font}));
+
+  const pointsFont = useNewComponent(() => SystemFont({
+    name: "sans-serif",
+    size: ( 10  - (playerIndex !== logic.player ? 1 : 0)) * resolution,
+    color: playerIndex === logic.player ? "orange" : "#000"
+  }));
+  const pointsLabel = useNewComponent(() => Label({font: pointsFont}));
 
   useDraw((context) => {
     // context.fillStyle = "#ffaa22";
@@ -41,15 +52,17 @@ export default function PlayerLabel(position: Vector, player: Player, playerInde
     context.shadowOffsetY = 1 * resolution;
     context.shadowColor = `rgba(255, 255, 255, ${playerIndex === logic.player ? 0.4 : 0.2})`;
 
-    font.size = (12 - (playerIndex !== logic.player ? 1 : 0)) * resolution;
-    label.text = player.name ?? `Player ${playerIndex + 1}`;
-    label.draw(context, {x: (geometry.shape.width - label.size.x) / 2, y: (geometry.shape.height - label.size.y) / 2 + 2* resolution});
+    const text = player.name ?? `Player ${playerIndex + 1}`;
+    if (label.text !== text) {
+      label.text = text;
+    }
+    label.draw(context, {x: (geometry.shape.width - label.size.x) / 2, y: (geometry.shape.height - label.size.y) / 2 + 2 * resolution});
 
-    font.size = (10 - (playerIndex !== logic.player ? 1 : 0)) * resolution;
-    label.text = '' + logic.state.players[playerIndex].points + " pts";
+    const pointsText = logic.state.players[playerIndex].points + " pts";
+    if (pointsLabel.text !== pointsText) {
+      pointsLabel.text = pointsText;
+    }
     context.shadowColor = "transparent";
-    label.draw(context, {x: (geometry.shape.width - label.size.x) / 2, y: (geometry.shape.height - label.size.y) / 2 + 14* resolution});
-
-    font.size = (12 - (playerIndex !== logic.player ? 1 : 0)) * resolution;
+    pointsLabel.draw(context, {x: (geometry.shape.width - pointsLabel.size.x) / 2, y: (geometry.shape.height - pointsLabel.size.y) / 2 + 14 * resolution});
   });
 }
