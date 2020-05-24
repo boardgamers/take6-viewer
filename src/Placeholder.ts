@@ -1,8 +1,8 @@
-import { Vector, useNewComponent, Geometry, Polygon, useDraw, Physics, useRootEntity, useType } from "@hex-engine/2d";
-import { Bounds } from "matter-js";
+import { Vector, useNewComponent, Geometry, Polygon, useDraw, useType, useEntity } from "@hex-engine/2d";
 import Attractor from "./Attractor";
 import { store } from "./Root";
 import { resolution } from "./constants";
+import { overlaps } from "./positioning";
 
 interface PlaceholderData {
   kind: "facedown" | "board";
@@ -25,8 +25,6 @@ export default function Placeholder(position: Vector, kind: PlaceholderKind) {
     enabled: false
   };
 
-  const physics = useNewComponent(() => Physics.Body(geometry, {isSensor: true}));
-
   useDraw(context => {
     switch (kind) {
       case "facedown":
@@ -36,7 +34,7 @@ export default function Placeholder(position: Vector, kind: PlaceholderKind) {
 
     const dragged = store.dragged;
 
-    if (data.enabled && dragged && Bounds.overlaps(physics.body.bounds, dragged!.getComponent(Physics.Body)!.body.bounds)) {
+    if (data.enabled && dragged && overlaps(useEntity(), dragged)) {
       context.fillStyle = "#ffffff22";
     }
     geometry.shape.draw(context, "fill");

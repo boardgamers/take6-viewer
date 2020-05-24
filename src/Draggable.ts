@@ -3,18 +3,18 @@ import {
   useNewComponent,
   useEntity,
   Geometry,
-  Physics,
   Mouse,
   Vector,
   useCurrentComponent,
 } from "@hex-engine/2d";
 import { store } from "./Root";
 import { EventEmitter } from "events";
+import CustomPhysics from "./CustomPhysics";
 
 export default function Draggable(geometry: ReturnType<typeof Geometry>) {
   useType(Draggable);
 
-  const physics = useEntity().getComponent(Physics.Body);
+  const physics = useEntity().getComponent(CustomPhysics);
 
   const mouse = useNewComponent(Mouse);
 
@@ -27,7 +27,7 @@ export default function Draggable(geometry: ReturnType<typeof Geometry>) {
 
   mouse.onDown((event) => {
     if (physics) {
-      physics.setStatic(true);
+      physics.body.static = true;
       store.dragged = component.entity;
     }
     isDragging = true;
@@ -42,7 +42,7 @@ export default function Draggable(geometry: ReturnType<typeof Geometry>) {
 
   mouse.onUp(() => {
     if (physics) {
-      physics.setStatic(false);
+      physics.body.static = false;
     }
     if (store.dragged === component.entity) {
       delete store.dragged;

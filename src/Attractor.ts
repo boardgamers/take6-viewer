@@ -1,10 +1,8 @@
 import {
   useType,
   Geometry,
-  Vector,
   useUpdate,
   Entity,
-  Physics,
   useEntity,
   useCurrentComponent,
   Component,
@@ -13,6 +11,7 @@ import {
 import { store, logic } from "./Root";
 import Runner from "./Runner";
 import { resolution } from "./constants";
+import CustomPhysics from "./CustomPhysics";
 
 export default function Attractor() {
   useType(Attractor as any);
@@ -26,31 +25,46 @@ export default function Attractor() {
     }
 
     for (const attractee of attractees) {
+      const physics = attractee.getComponent(CustomPhysics)!;
+
+      if (physics.body.static) {
+        continue;
+      }
+
       const geometry = attractee.getComponent(Geometry)!;
       const position = geometry.position!;
-      const physics = attractee.getComponent(Physics.Body)!;
       const positionDiff = mainGeo.position.subtract(position);
-      const force = positionDiff.multiply(0.5 * resolution / 100000);
       const rotationDiff = mainGeo.rotation - geometry.rotation;
       const magnitude = positionDiff.magnitude;
 
-      let reachedPosition = magnitude < 1 || (positionDiff.x*physics.body.velocity.x + positionDiff.y * physics.body.velocity.y) < 0;
+      let reachedPosition = magnitude < 1 * resolution;
       let reachedRotation = Math.abs(rotationDiff) < 0.02;
 
       if (reachedPosition) {
-        physics.setVelocity(new Vector(0, 0));
-        physics.setPosition(mainGeo.position.clone());
+        physics.body.velocity = 0;
+        geometry.position.mutateInto(mainGeo.position);
       } else {
-        if (magnitude < 500 * resolution) {
-          force.multiplyMutate(500 * resolution / magnitude);
+        physics.body.velocity += 1;
+        if (physics.body.velocity > 10) {
+          physics.body.velocity = 10;
         }
-        physics.applyForce(position, force);
+        const newPosition = position.add(positionDiff.normalize().multiplyMutate(physics.body.velocity * resolution));
+
+        const vec1 = geometry.position.subtract(mainGeo.position);
+        const vec2 = newPosition.subtract(mainGeo.position);
+
+        if (vec1.x * vec2.x + vec1.y * vec2.y < 0) {
+          reachedPosition = true;
+          physics.body.velocity = 0;
+          geometry.position.mutateInto(mainGeo.position);
+        } else {
+          geometry.position.mutateInto(newPosition);
+        }
       }
       if (reachedRotation) {
-        physics.setAngle(mainGeo.rotation);
-        physics.setAngularVelocity(0);
+        geometry.rotation = mainGeo.rotation;
       } else {
-        physics.setAngularVelocity(rotationDiff > 0 ? 0.01 : -0.01);
+        geometry.rotation += (rotationDiff > 0 ? 0.01 : -0.01);
       }
       if (!geometry.scale.equals(mainGeo.scale)) {
         geometry.scale.mutateInto(mainGeo.scale);

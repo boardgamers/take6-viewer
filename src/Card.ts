@@ -7,7 +7,6 @@ import {
   Vector,
   SystemFont,
   Label,
-  Physics,
   useEntity,
   Mouse,
   useCurrentComponent,
@@ -18,6 +17,7 @@ import { Card as ICard } from "take6-engine";
 import {logic, store} from "./Root";
 import Runner from "./Runner";
 import { resolution } from './constants';
+import CustomPhysics from "./CustomPhysics";
 
 export default function Card(position: Vector, card: ICard) {
   useType(Card);
@@ -37,7 +37,7 @@ export default function Card(position: Vector, card: ICard) {
   const font = useNewComponent(() => SystemFont({name: "sans-serif", size: 12 * resolution}))
   const label = useNewComponent(() => Label({font}));
 
-  useNewComponent(() => Physics.Body(geometry, {isSensor: true, frictionAir: 0.01/resolution}));
+  useNewComponent(() => CustomPhysics());
   const draggable = useNewComponent(() => Draggable(geometry));
 
   draggable.on("dragStop", () => {

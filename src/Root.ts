@@ -3,7 +3,6 @@ import {
   useNewComponent,
   useChild,
   Canvas,
-  Physics,
   Vector,
   Geometry,
   Polygon,
@@ -31,9 +30,6 @@ export default function Root() {
 
   const canvas = useNewComponent(() => Canvas({ backgroundColor: "#444" }));
   canvas.fullscreen({ pixelZoom: 2 / resolution });
-
-  const engine = useNewComponent(Physics.Engine);
-  engine.engine.world.gravity.y = 0;
 
   logic = new Logic();
 
