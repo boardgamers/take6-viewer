@@ -14,7 +14,7 @@ import PlayerLabel from "./PlayerLabel";
 import Placeholder from "./Placeholder";
 import { RootData } from "./rootdata";
 import Logic from "./logic";
-import { repositionHandAttractor } from "./positioning";
+import { repositionHandAttractor, createHand, createBoard } from "./ui";
 import { range } from "lodash";
 import CanvasCenter from "./CanvasCenter";
 import Runner from "./Runner";
@@ -82,33 +82,21 @@ export default function Root() {
 
       const placeholder = useChild(() => Placeholder(pos, j === 5 ? "danger" : "default"));
       row.push(placeholder);
-
-      if (logic.state.rows[i][j]) {
-        const card = useChild(() => Card(pos, logic.state.rows[i][0]));
-
-        placeholder.getComponent(Attractor)?.attract(card);
-      }
     }
   }
 
-  const hand = logic.state.players[0].hand;
-
-  for (let i = hand.length - 1; i >= 0; i--) {
-    const child = useChild(() => Card(new Vector((i-(hand.length-1)/2)*45, 0).multiplyMutate(resolution), hand[i]));
-
+  for (let i = 0; i <= 10; i++) {
     const attractor = useChild(() => {
       useNewComponent(() => Attractor());
       useNewComponent(() => Geometry({
         shape: new Polygon([])
       }));
     });
-    attractor.getComponent(Attractor)!.attract(child);
-    rootData.handAttractors.unshift(attractor);
+    rootData.handAttractors.push(attractor);
   }
 
-  for (let i = 0; i < hand.length; i++) {
-    repositionHandAttractor(i, hand.length);
-  }
+  createBoard();
+  createHand();
 
   // Transfer everything to the canvas center
   const root = useEntity();

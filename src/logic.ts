@@ -1,12 +1,13 @@
 import { cloneDeep, sumBy } from "lodash";
-import { GameState, setup, move, MoveName, moveAI, stripSecret, GameEventName } from "take6-engine";
+import { GameState, setup, move, MoveName, moveAI, stripSecret, GameEventName, Card as ICard } from "take6-engine";
 import { Entity, Geometry, useChild } from "@hex-engine/2d";
 import Card from "./Card";
 import { store } from "./Root";
 import Attractor from "./Attractor";
-import { repositionHandAttractor, overlaps } from "./positioning";
+import { overlaps } from "./positioning";
 import Runner from "./Runner";
 import Placeholder from "./Placeholder";
+import { repositionHandAttractor, createHand, createBoard } from "./ui";
 
 export default class Logic {
   constructor() {
@@ -164,6 +165,19 @@ export default class Logic {
 
               placeholder.getComponent(Attractor)?.attract(entity);
             }
+
+            return;
+          }
+          case GameEventName.RoundStart: {
+            for (const card of Object.values(store.cards)) {
+              card.destroy();
+            }
+
+            this.state.rows = event.cards.board.map(card => [card]) as [ICard[], ICard[], ICard[], ICard[]];
+            this.state.players.forEach((pl, i) => pl.hand = event.cards.players[i]);
+
+            createHand();
+            createBoard();
 
             return;
           }
