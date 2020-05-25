@@ -55,7 +55,7 @@ export default function Root() {
 
   store = rootData;
 
-  rootData.placeholders.players[logic.player] = useChild(() => Placeholder(new Vector(-220, 170).multiplyMutate(resolution), "facedown"));
+  rootData.placeholders.players[logic.player] = useChild(() => Placeholder(new Vector(-220, 170).multiplyMutate(resolution), "facedown", logic.player));
   useChild(() => PlayerLabel(new Vector(0, 210).multiplyMutate(resolution), logic.state.players[logic.player], logic.player));
 
   rootData.placeholders.players[logic.player].getComponent(Placeholder)!.data.enabled = true;
@@ -65,10 +65,10 @@ export default function Root() {
     const player = entry[1];
 
     if (index <= 5) {
-      rootData.placeholders.players[player] = useChild(() => Placeholder(new Vector(173 + 145 * (index % 2), -163 + 110 * Math.floor(index /2)).multiplyMutate(resolution), "facedown"));
+      rootData.placeholders.players[player] = useChild(() => Placeholder(new Vector(173 + 145 * (index % 2), -163 + 110 * Math.floor(index /2)).multiplyMutate(resolution), "facedown", player));
       useChild(() => PlayerLabel(new Vector(173 + 145 * (index % 2), -218 + 110 * Math.floor(index /2)).multiplyMutate(resolution), logic.state.players[player], player));
     } else {
-      rootData.placeholders.players[player] = useChild(() => Placeholder(new Vector(-317, -163 + 110 * (index - 6)).multiplyMutate(resolution), "facedown"));
+      rootData.placeholders.players[player] = useChild(() => Placeholder(new Vector(-317, -163 + 110 * (index - 6)).multiplyMutate(resolution), "facedown", player));
       useChild(() => PlayerLabel(new Vector(-317, -218 + 110 * (index - 6)).multiplyMutate(resolution), logic.state.players[player], player));
     }
   }

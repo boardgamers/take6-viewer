@@ -53,6 +53,10 @@ export default class Logic {
     }
   }
 
+  canPlayerMove(playerIndex: number) {
+    return !!this.#state.players[playerIndex].availableMoves;
+  }
+
   get canAIMove() {
     return this.#state.players.filter(pl => pl !== this.#state.players[this.player]).some(pl => pl.availableMoves);
   }

@@ -1,6 +1,6 @@
 import { Vector, useNewComponent, Geometry, Polygon, useDraw, useType, useEntity } from "@hex-engine/2d";
 import Attractor from "./Attractor";
-import { store } from "./Root";
+import { store, logic } from "./Root";
 import { resolution } from "./constants";
 import { overlaps } from "./positioning";
 
@@ -12,7 +12,7 @@ interface PlaceholderData {
   enabled: boolean;
 }
 
-export default function Placeholder(position: Vector, kind: PlaceholderKind) {
+export default function Placeholder(position: Vector, kind: PlaceholderKind, playerNumber?: number) {
   useType(Placeholder);
 
   const geometry = useNewComponent(() => Geometry({
@@ -38,12 +38,23 @@ export default function Placeholder(position: Vector, kind: PlaceholderKind) {
       context.fillStyle = "#ffffff22";
     }
     geometry.shape.draw(context, "fill");
+
+    if (playerNumber !== undefined && logic.canPlayerMove(playerNumber)) {
+      context.lineWidth = 2 * resolution;
+      context.strokeStyle = "#77ff7755";
+      geometry.shape.draw(context, "stroke");
+    } else if (data.enabled) {
+      context.lineWidth = 2 * resolution;
+      context.strokeStyle = "#ffffff33";
+      geometry.shape.draw(context, "stroke");
+    }
   });
 
   useNewComponent(Attractor);
 
   return {
-    data
+    data,
+    player: playerNumber
   };
 }
 
