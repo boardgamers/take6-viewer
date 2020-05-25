@@ -29,7 +29,7 @@ export default function Root() {
   useType(Root);
 
   const canvas = useNewComponent(() => Canvas({ backgroundColor: "#444" }));
-  canvas.fullscreen({ pixelZoom: 2 / resolution });
+  canvas.setPixelated(false);
 
   logic = new Logic();
 

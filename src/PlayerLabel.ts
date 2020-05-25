@@ -31,7 +31,7 @@ export default function PlayerLabel(position: Vector, player: Player, playerInde
 
   const pointsFont = useNewComponent(() => SystemFont({
     name: "sans-serif",
-    size: ( 10  - (playerIndex !== logic.player ? 1 : 0)) * resolution,
+    size: 10 * resolution,
     color: playerIndex === logic.player ? "orange" : "#000"
   }));
   const pointsLabel = useNewComponent(() => Label({font: pointsFont}));
@@ -58,7 +58,7 @@ export default function PlayerLabel(position: Vector, player: Player, playerInde
     }
     label.draw(context, {x: (geometry.shape.width - label.size.x) / 2, y: (geometry.shape.height - label.size.y) / 2 + 2 * resolution});
 
-    const pointsText = logic.state.players[playerIndex].points + " pts";
+    const pointsText = '' + logic.state.players[playerIndex].points;
     if (pointsLabel.text !== pointsText) {
       pointsLabel.text = pointsText;
     }
