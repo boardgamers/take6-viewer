@@ -6486,10 +6486,10 @@ supports-color@^7.1.0:
   dependencies:
     has-flag "^4.0.0"
 
-take6-engine@^0.3.0:
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/take6-engine/-/take6-engine-0.3.0.tgz#9572f9d59013136d2a56973b204ca6989cf8171d"
-  integrity sha512-5/0WVj2z5Na5pak4PO4zP2AWaT27znsv8YXKovMiQOO7Z6NNZXRSWYfFtWkVM1huMX2WiEB/a5CNhiAB+hDytA==
+take6-engine@^0.4.0:
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/take6-engine/-/take6-engine-0.4.0.tgz#444f07b7be3b9f6e438ddeb401cc90c4026f7f16"
+  integrity sha512-XZ9lt2GibiQXEfGTO3D6RkfSv2TKLz7KD2YKUYy4U8A5U5x7kDjjBWEIUGrc0SyHkeXaifb845cWHNPJcVQRzA==
   dependencies:
     lodash "^4.17.15"
     seedrandom "^3.0.5"
