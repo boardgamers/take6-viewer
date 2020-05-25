@@ -3,33 +3,122 @@ import {
   useNewComponent,
   useChild,
   Canvas,
-  Physics,
   Vector,
+  Geometry,
+  Polygon,
+  useEntity,
 } from "@hex-engine/2d";
 import Card from "./Card";
 import Attractor from "./Attractor";
+import PlayerLabel from "./PlayerLabel";
+import Placeholder from "./Placeholder";
+import { RootData } from "./rootdata";
+import Logic from "./logic";
+import { repositionHandAttractor } from "./positioning";
+import { range } from "lodash";
+import CanvasCenter from "./CanvasCenter";
+import Runner from "./Runner";
+import { resolution } from "./constants";
+
+let store: RootData;
+let logic: Logic;
+
+export { store, logic };
 
 export default function Root() {
   useType(Root);
 
   const canvas = useNewComponent(() => Canvas({ backgroundColor: "#444" }));
-  canvas.fullscreen({ pixelZoom: 2 });
+  canvas.setPixelated(false);
 
-  const engine = useNewComponent(Physics.Engine);
-  engine.engine.world.gravity.y = 0;
+  logic = new Logic();
 
-  const canvasCenter = new Vector(
-    canvas.element.width / 2,
-    canvas.element.height / 2
-  );
+  const center = useChild(() => {
+    useNewComponent(CanvasCenter);
+    useNewComponent(Runner);
+  });
 
-  for (let i = 9; i >= 0; i--) {
-    const child = useChild(() => new Card(canvasCenter.addX((i-4.5)*45), {number: i, points: 1}));
+  const rootData: RootData = {
+    placeholders: {
+      players: {},
+      rows: [],
+    },
+    cards: {
 
-    const attractor = useChild(() => Attractor(
-      new Vector(0, -800).rotateMutate(-(i-4.5) * 0.04).addMutate(canvasCenter).addYMutate(950),
-      (i - 4.5) * 0.03)
-    );
-    attractor.rootComponent.attractees.add(child);
+    },
+    attractedBy: new WeakMap(),
+    handAttractors: [],
+    canvas,
+    canvasCenter: center,
+    waitingAnimations: 0
+  };
+
+  store = rootData;
+
+  rootData.placeholders.players[logic.player] = useChild(() => Placeholder(new Vector(-220, 170).multiplyMutate(resolution), "facedown", logic.player));
+  useChild(() => PlayerLabel(new Vector(0, 210).multiplyMutate(resolution), logic.state.players[logic.player], logic.player));
+
+  rootData.placeholders.players[logic.player].getComponent(Placeholder)!.data.enabled = true;
+
+  for (const entry of Object.entries(range(0, logic.state.players.length).filter(pl => pl !== logic.player))) {
+    const index = + entry[0];
+    const player = entry[1];
+
+    if (index <= 5) {
+      rootData.placeholders.players[player] = useChild(() => Placeholder(new Vector(173 + 145 * (index % 2), -163 + 110 * Math.floor(index /2)).multiplyMutate(resolution), "facedown", player));
+      useChild(() => PlayerLabel(new Vector(173 + 145 * (index % 2), -218 + 110 * Math.floor(index /2)).multiplyMutate(resolution), logic.state.players[player], player));
+    } else {
+      rootData.placeholders.players[player] = useChild(() => Placeholder(new Vector(-317, -163 + 110 * (index - 6)).multiplyMutate(resolution), "facedown", player));
+      useChild(() => PlayerLabel(new Vector(-317, -218 + 110 * (index - 6)).multiplyMutate(resolution), logic.state.players[player], player));
+    }
   }
+
+  for (let i = 0; i < logic.state.rows.length; i++) {
+    const row: typeof rootData.placeholders.rows[0] = [];
+
+    rootData.placeholders.rows.push(row);
+    for (let j = 0; j < 6; j++) {
+      const pos = new Vector(-203 + j * 55, (i - 1.5) * 80 - 75).multiplyMutate(resolution);
+
+      const placeholder = useChild(() => Placeholder(pos, j === 5 ? "danger" : "default"));
+      row.push(placeholder);
+
+      if (logic.state.rows[i][j]) {
+        const card = useChild(() => Card(pos, logic.state.rows[i][0]));
+
+        placeholder.getComponent(Attractor)?.attract(card);
+      }
+    }
+  }
+
+  const hand = logic.state.players[0].hand;
+
+  for (let i = hand.length - 1; i >= 0; i--) {
+    const child = useChild(() => Card(new Vector((i-(hand.length-1)/2)*45, 0).multiplyMutate(resolution), hand[i]));
+
+    const attractor = useChild(() => {
+      useNewComponent(() => Attractor());
+      useNewComponent(() => Geometry({
+        shape: new Polygon([])
+      }));
+    });
+    attractor.getComponent(Attractor)!.attract(child);
+    rootData.handAttractors.unshift(attractor);
+  }
+
+  for (let i = 0; i < hand.length; i++) {
+    repositionHandAttractor(i, hand.length);
+  }
+
+  // Transfer everything to the canvas center
+  const root = useEntity();
+  for (const entity of root.children) {
+    if (entity !== center) {
+      entity.parent = center;
+      center.children.add(entity);
+      root.children.delete(entity);
+    }
+  }
+
+  logic.updateUI();
 }

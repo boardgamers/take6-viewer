@@ -3,26 +3,32 @@ import {
   useNewComponent,
   useEntity,
   Geometry,
-  Physics,
   Mouse,
   Vector,
+  useCurrentComponent,
 } from "@hex-engine/2d";
+import { store } from "./Root";
+import { EventEmitter } from "events";
+import CustomPhysics from "./CustomPhysics";
 
 export default function Draggable(geometry: ReturnType<typeof Geometry>) {
   useType(Draggable);
 
-  const physics = useEntity().getComponent(Physics.Body);
+  const physics = useEntity().getComponent(CustomPhysics);
 
   const mouse = useNewComponent(Mouse);
 
-  let originalStatic = false;
   let isDragging = false;
   const startedDraggingAt = new Vector(0, 0);
 
+  const emitter = new EventEmitter();
+
+  const component = useCurrentComponent();
+
   mouse.onDown((event) => {
     if (physics) {
-      originalStatic = physics.body.isStatic;
-      physics.setStatic(true);
+      physics.body.static = true;
+      store.dragged = component.entity;
     }
     isDragging = true;
     startedDraggingAt.mutateInto(event.pos);
@@ -36,8 +42,14 @@ export default function Draggable(geometry: ReturnType<typeof Geometry>) {
 
   mouse.onUp(() => {
     if (physics) {
-      physics.setStatic(originalStatic);
+      physics.body.static = false;
+    }
+    if (store.dragged === component.entity) {
+      delete store.dragged;
+      emitter.emit("dragStop");
     }
     isDragging = false;
   });
+
+  return emitter;
 }
