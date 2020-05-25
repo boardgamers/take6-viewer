@@ -12,6 +12,7 @@ import { store, logic } from "./Root";
 import Runner from "./Runner";
 import { resolution } from "./constants";
 import CustomPhysics from "./CustomPhysics";
+import Card from "./Card";
 
 export default function Attractor() {
   useType(Attractor as any);
@@ -72,6 +73,7 @@ export default function Attractor() {
 
       if (reachedRotation && reachedPosition && !reachedDestination.has(attractee)) {
         reachedDestination.add(attractee);
+        console.log("reached destination", attractee.getComponent(Card)?.card);
         logic.onAnimationFinished();
       }
     }
@@ -100,13 +102,18 @@ export default function Attractor() {
       entity.getComponent(Runner)?.run(() => useDestroy().onDestroy(() => self.unlink(entity)));
     },
     unlink(entity: Entity) {
-      attractees.delete(entity);
+      if (!attractees.delete(entity)) {
+        return;
+      }
 
       if (reachedDestination.has(entity)) {
         reachedDestination.delete(entity);
       } else {
         // We stopped the animation midway, so we need to indicate
-        setTimeout(() => logic.onAnimationFinished());
+        setTimeout(() => {if (!reachedDestination.has(entity)) {
+          console.log("premature destroying of", entity?.getComponent(Card)?.card);
+          logic.onAnimationFinished();
+        }});
       }
 
       if (store.attractedBy.get(entity) === self) {

@@ -101,20 +101,27 @@ export default class Logic {
               const placeholder = store.placeholders.rows[move.data.row].slice(-1)[0];
               placeholder.getComponent(Attractor).attract(store.cards[card.number]);
 
-              this.queueAnimation(() => this.delay(200));
               this.queueAnimation(() => {
+                console.log("delaying before taking row");
+                this.delay(200);
+              });
+              this.queueAnimation(() => {
+                console.log("Taking row");
                 // Then remove all existing cards from row
                 for (const card of this.state.rows[move.data.row]) {
                   store.cards[card.number].destroy();
                 }
                 this.state.players[player].points += sumBy(this.state.rows[move.data.row], "points");
                 this.state.rows[move.data.row] = [];
+
+                console.log("delaying after taking row");
+                this.delay(300);
               });
-              this.queueAnimation(() => this.delay(300));
             }
 
             // Then move card to correct spot
             this.queueAnimation(() => {
+              console.log("attracting card to place on board", card);
               this.state.rows[move.data.row].push(card);
 
               const placeholder = store.placeholders.rows[move.data.row][this.state.rows[move.data.row].length - 1];
@@ -169,6 +176,7 @@ export default class Logic {
     }
 
     if (this.#animationQueue.length > 0) {
+      console.log("shifting queue");
       this.#animationQueue.shift()!();
       this.delay(0);
       return;
@@ -182,6 +190,7 @@ export default class Logic {
 
     console.log("updated UI", this.canAIMove, this.AIThatCanMove);
     if (this.canAIMove) {
+      console.log("moving AI");
       this.#state = moveAI(this.#state, this.AIThatCanMove);
       this.updateAvailableMoves();
       this.delay(0);
@@ -225,6 +234,7 @@ export default class Logic {
 
   onAnimationFinished() {
     store.waitingAnimations = Math.max(store.waitingAnimations - 1, 0);
+    console.log("on animation finished", store.waitingAnimations);
 
     if (store.waitingAnimations === 0) {
       this.updateUI();
