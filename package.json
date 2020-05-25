@@ -5,7 +5,7 @@
   "dependencies": {
     "@hex-engine/2d": "^0.4.1",
     "matter-js": "^0.14.2",
-    "take6-engine": "^0.1.0"
+    "take6-engine": "^0.3.0"
   },
   "devDependencies": {
     "hex-engine-scripts": "^0.4.1",

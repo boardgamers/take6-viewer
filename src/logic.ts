@@ -99,7 +99,7 @@ export default class Logic {
             return;
           }
           case MoveName.PlaceCard: {
-            const card = this.state.players[player].faceDownCard;
+            const card = this.state.players[player].faceDownCard!;
             if (move.data.replace) {
               // put new card on 6th spot
               const placeholder = store.placeholders.rows[move.data.row].slice(-1)[0];
