@@ -8,13 +8,12 @@ import {
   Polygon,
   useEntity,
 } from "@hex-engine/2d";
-import Card from "./Card";
 import Attractor from "./Attractor";
 import PlayerLabel from "./PlayerLabel";
 import Placeholder from "./Placeholder";
 import { RootData } from "./rootdata";
 import Logic from "./logic";
-import { repositionHandAttractor, createHand, createBoard } from "./ui";
+import { createHand, createBoard } from "./ui";
 import { range } from "lodash";
 import CanvasCenter from "./CanvasCenter";
 import Runner from "./Runner";
@@ -28,7 +27,7 @@ export { store, logic };
 export default function Root() {
   useType(Root);
 
-  const canvas = useNewComponent(() => Canvas({ backgroundColor: "#444" }));
+  const canvas = useNewComponent(() => Canvas({ backgroundColor: "#444"}));
   canvas.setPixelated(false);
 
   logic = new Logic();

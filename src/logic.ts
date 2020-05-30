@@ -1,25 +1,45 @@
-import { cloneDeep, sumBy } from "lodash";
-import { GameState, setup, move, MoveName, moveAI, stripSecret, GameEventName, Card as ICard } from "take6-engine";
-import { Entity, Geometry, useChild } from "@hex-engine/2d";
+import { cloneDeep, sumBy, isEqual } from "lodash";
+import { GameState, setup, move, MoveName, moveAI, stripSecret, GameEventName, Card as ICard, AvailableMoves, availableMoves, LogItem } from "take6-engine";
+import { Entity } from "@hex-engine/2d";
 import Card from "./Card";
 import { store } from "./Root";
 import Attractor from "./Attractor";
 import { overlaps } from "./positioning";
-import Runner from "./Runner";
 import Placeholder from "./Placeholder";
-import { repositionHandAttractor, createHand, createBoard } from "./ui";
+import { repositionHandAttractor, createHand, createBoard, placeFacedownCards, placeFacedownCard, enableDisablePlaceholders } from "./ui";
+import { EventEmitter } from "events";
 
-export default class Logic {
-  constructor() {
+export default class Logic extends EventEmitter {
+  constructor(local = true) {
+    super();
+
     this.#state = setup(10, {}, "");
     this.player = 0;
+    this.isLocal = local;
     this.state = cloneDeep(stripSecret(this.#state, this.player));
+  }
+
+  overwrite(data: GameState) {
+    this.#state = data;
+    this.state = cloneDeep(data);
+
+    for (const card of Object.values(store.cards)) {
+      card.destroy();
+    }
+
+    createHand();
+    createBoard();
+    placeFacedownCards();
   }
 
   handleCardDrop(card: Entity) {
     const commands = this.state.players[this.player].availableMoves;
 
     if (!commands) {
+      return;
+    }
+
+    if (this.state.log.length !== this.#state.log.length) {
       return;
     }
 
@@ -33,12 +53,24 @@ export default class Logic {
         return;
       }
 
-      this.#state = move(this.#state, {name: MoveName.ChooseCard, data: cardData}, this.player);
+      if (this.isLocal) {
+        this.#state = move(this.#state, {name: MoveName.ChooseCard, data: cardData}, this.player);
+      } else {
+        this.#state.log.push({type: "move", move: {name: MoveName.ChooseCard, data: cardData}, player: this.player});
+        this.#state.players[this.player].availableMoves = null;
+        this.emit("move", {name: MoveName.ChooseCard, data: cardData});
+      }
       this.updateAvailableMoves();
     } else if (commands.placeCard) {
       for (const data of commands.placeCard) {
         if (store.placeholders.rows[data.row].some(placeholder => placeholder.getComponent(Placeholder)!.data.enabled && overlaps(card, placeholder))) {
-          this.#state = move(this.#state, {name: MoveName.PlaceCard, data}, this.player);
+          if (this.isLocal) {
+            this.#state = move(this.#state, {name: MoveName.PlaceCard, data}, this.player);
+          } else {
+            this.#state.log.push({type: "move", move: {name: MoveName.PlaceCard, data}, player: this.player});
+            this.#state.players[this.player].availableMoves = null;
+            this.emit("move", {name: MoveName.PlaceCard, data});
+          }
           this.updateAvailableMoves();
           break;
         }
@@ -77,13 +109,7 @@ export default class Logic {
 
         switch (move.name) {
           case MoveName.ChooseCard: {
-            const placeholder = store.placeholders.players[player];
-
-            const  entity = store.cards[move.data.number] ?? store.canvasCenter.getComponent(Runner)?.run(() => {
-              return useChild(() => Card(placeholder.getComponent(Geometry)?.position!, move.data));
-            });
-
-            placeholder.getComponent(Attractor)?.attract(entity);
+            placeFacedownCard(player, move.data);
 
             this.delay(200);
 
@@ -144,26 +170,10 @@ export default class Logic {
             const cards = event.cards;
 
             for (let player = 0; player < cards.length; player++) {
-              const placeholder = store.placeholders.players[player];
-              const attractees: Entity[] = [...placeholder?.getComponent(Attractor)!.attractees];
-              const existingCardEntity = attractees?.find(entity => entity.getComponent(Card));
-              const existingCard = existingCardEntity?.getComponent(Card)?.card;
-
               const newCard = cards[player];
 
               this.state.players[player].faceDownCard = newCard;
-
-              if (existingCard?.number === newCard?.number) {
-                continue;
-              }
-
-              existingCardEntity?.destroy();
-
-              const entity = store.cards[newCard.number] ?? store.canvasCenter.getComponent(Runner)?.run(() => {
-                return useChild(() => Card(placeholder.getComponent(Geometry)?.position!, newCard));
-              });
-
-              placeholder.getComponent(Attractor)?.attract(entity);
+              placeFacedownCard(player, newCard);
             }
 
             return;
@@ -187,6 +197,34 @@ export default class Logic {
     }
   }
 
+  updateLog(data: {start: number, log: LogItem[], availableMoves: AvailableMoves[]}) {
+    for (let i = 0; i < availableMoves.length; i++) {
+      this.#state.players[i].availableMoves = availableMoves[i];
+    }
+
+    if (data.start > this.#state.log.length) {
+      this.emit("fetchState");
+      return;
+    }
+
+    // edge case when we do a move and another player just did a move
+    if (data.start === this.#state.log.length && data.start > 0 && isEqual(data.log[0], this.#state.log.slice(-1)[0])) {
+      this.emit("fetchState");
+      return;
+    }
+
+    // Check if can be merged
+    for (const localLogItem of this.#state.log.slice(data.start)) {
+      if (!data.log.some(item => isEqual(item, localLogItem))) {
+        this.emit("fetchState");
+        return;
+      }
+    }
+
+    this.#state.log = [...this.#state.log.slice(0, data.start), ...data.log];
+    this.updateUI();
+  }
+
   updateUI() {
     if (store.waitingAnimations) {
       console.log("waiting animations", store.waitingAnimations);
@@ -207,32 +245,14 @@ export default class Logic {
     }
 
     console.log("updated UI", this.canAIMove, this.AIThatCanMove);
-    if (this.canAIMove) {
+    if (this.canAIMove && this.isLocal) {
       console.log("moving AI");
       this.#state = moveAI(this.#state, this.AIThatCanMove);
       this.updateAvailableMoves();
       this.delay(0);
     }
 
-    const allPlaceholders: Entity[] = [...Object.values(store.placeholders.players), ...store.placeholders.rows.flat(1)];
-    for (const placeholder of allPlaceholders) {
-      placeholder.getComponent(Placeholder)!.data.enabled = false;
-    }
-
-
-    if (this.#state.players[this.player]?.availableMoves) {
-      if(this.#state.players[this.player].availableMoves![MoveName.ChooseCard]) {
-        store.placeholders.players[this.player].getComponent(Placeholder)!.data.enabled = true;
-      } else if (this.#state.players[this.player].availableMoves![MoveName.PlaceCard]) {
-        for (const data of this.#state.players[this.player].availableMoves![MoveName.PlaceCard]!) {
-          if (data.replace) {
-            store.placeholders.rows[data.row].slice(-1)[0].getComponent(Placeholder)!.data.enabled = true;
-          } else {
-            store.placeholders.rows[data.row][this.state.rows[data.row].length].getComponent(Placeholder)!.data.enabled = true;
-          }
-        }
-      }
-    }
+    enableDisablePlaceholders();
   }
 
   queueAnimation(fn: () => any) {
@@ -262,6 +282,7 @@ export default class Logic {
   state: GameState;
   #state: GameState;
   player: number;
+  isLocal: boolean;
 
   #animationQueue: Array<() => any> = [];
 }

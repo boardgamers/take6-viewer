@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "@hex-engine/2d": "^0.4.1",
-    "take6-engine": "^0.4.0"
+    "take6-engine": "^0.4.2"
   },
   "devDependencies": {
     "hex-engine-scripts": "^0.4.1",
@@ -15,5 +15,10 @@
     "dev": "hex-engine-scripts dev",
     "build": "hex-engine-scripts build",
     "test": "hex-engine-scripts test"
-  }
+  },
+  "files": [
+    "dist",
+    "src",
+    "tsconfig.json"
+  ]
 }
