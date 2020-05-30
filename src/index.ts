@@ -2,7 +2,7 @@ import { createRoot } from "@hex-engine/2d";
 import Root from "./Root";
 import launch from "./launch";
 
-if (process.env.NODE_ENV !== "production" && 0) {
+if (process.env.NODE_ENV !== "production") {
   createRoot(Root);
 }
 
