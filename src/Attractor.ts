@@ -8,7 +8,7 @@ import {
   Component,
   useDestroy,
 } from "@hex-engine/2d";
-import { store, logic } from "./Root";
+import { store } from "./Root";
 import Runner from "./Runner";
 import { resolution } from "./constants";
 import CustomPhysics from "./CustomPhysics";
@@ -73,8 +73,8 @@ export default function Attractor() {
 
       if (reachedRotation && reachedPosition && !reachedDestination.has(attractee)) {
         reachedDestination.add(attractee);
-        console.log("reached destination", attractee.getComponent(Card)?.card);
-        logic.onAnimationFinished();
+        // console.log("reached destination", attractee.getComponent(Card)?.card);
+        store.logic!.onAnimationFinished();
       }
     }
   });
@@ -91,12 +91,12 @@ export default function Attractor() {
 
   return {
     attract(this: Component & ReturnType<typeof Attractor>, entity: Entity) {
-      store.attractedBy.get(entity)?.unlink(entity);
+      store.ui!.attractedBy.get(entity)?.unlink(entity);
       attractees.add(entity);
-      store.attractedBy.set(entity, this);
+      store.ui!.attractedBy.set(entity, this);
 
       if (!reachedDestination.has(entity)) {
-        logic.stackAnimation();
+        store.logic!.stackAnimation();
       }
 
       entity.getComponent(Runner)?.run(() => useDestroy().onDestroy(() => self.unlink(entity)));
@@ -111,13 +111,13 @@ export default function Attractor() {
       } else {
         // We stopped the animation midway, so we need to indicate
         setTimeout(() => {if (!reachedDestination.has(entity)) {
-          console.log("premature destroying of", entity?.getComponent(Card)?.card);
-          logic.onAnimationFinished();
+          // console.log("premature destroying of", entity?.getComponent(Card)?.card);
+          store.logic!.onAnimationFinished();
         }});
       }
 
-      if (store.attractedBy.get(entity) === self) {
-        store.attractedBy.delete(entity);
+      if (store.ui!.attractedBy.get(entity) === self) {
+        store.ui!.attractedBy.delete(entity);
       }
     },
     attractees

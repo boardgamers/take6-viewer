@@ -14,7 +14,7 @@ import {
 } from "@hex-engine/2d";
 import Draggable from "./Draggable";
 import { Card as ICard } from "take6-engine";
-import {logic, store} from "./Root";
+import {store} from "./Root";
 import Runner from "./Runner";
 import { resolution } from './constants';
 import CustomPhysics from "./CustomPhysics";
@@ -41,7 +41,7 @@ export default function Card(position: Vector, card: ICard) {
   const draggable = useNewComponent(() => Draggable(geometry));
 
   draggable.on("dragStop", () => {
-    logic.handleCardDrop(self.entity);
+    store.logic!.handleCardDrop(self.entity);
   });
 
   useDraw((context) => {
@@ -75,10 +75,10 @@ export default function Card(position: Vector, card: ICard) {
 
   if (card.number) {
     const entity = useEntity();
-    store.cards[card.number] = entity;
+    store.ui!.cards[card.number] = entity;
     useDestroy().onDestroy(() => {
-      if (store.cards[card.number] === entity) {
-        delete store.cards[card.number];
+      if (store.ui!.cards[card.number] === entity) {
+        delete store.ui!.cards[card.number];
       }
     });
   }

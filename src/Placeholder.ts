@@ -1,6 +1,6 @@
 import { Vector, useNewComponent, Geometry, Polygon, useDraw, useType, useEntity } from "@hex-engine/2d";
 import Attractor from "./Attractor";
-import { store, logic } from "./Root";
+import { store } from "./Root";
 import { resolution } from "./constants";
 import { overlaps } from "./positioning";
 
@@ -32,14 +32,14 @@ export default function Placeholder(position: Vector, kind: PlaceholderKind, pla
       case "danger": context.fillStyle = "#ff000044"; break;
     }
 
-    const dragged = store.dragged;
+    const dragged = store.ui!.dragged;
 
     if (data.enabled && dragged && overlaps(useEntity(), dragged)) {
       context.fillStyle = "#ffffff22";
     }
     geometry.shape.draw(context, "fill");
 
-    if (playerNumber !== undefined && logic.canPlayerMove(playerNumber)) {
+    if (playerNumber !== undefined && store.logic!.canPlayerMove(playerNumber)) {
       context.lineWidth = 2 * resolution;
       context.strokeStyle = "#77ff7755";
       geometry.shape.draw(context, "stroke");

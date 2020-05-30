@@ -2,7 +2,9 @@ import { createRoot } from "@hex-engine/2d";
 import Root from "./Root";
 import launch from "./launch";
 
-createRoot(Root);
+if (process.env.NODE_ENV !== "production" && 0) {
+  createRoot(Root);
+}
 
 let globalItem: any;
 if (typeof window !== 'undefined') {

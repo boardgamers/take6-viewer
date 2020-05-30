@@ -28,7 +28,7 @@ export default function Draggable(geometry: ReturnType<typeof Geometry>) {
   mouse.onDown((event) => {
     if (physics) {
       physics.body.static = true;
-      store.dragged = component.entity;
+      store.ui!.dragged = component.entity;
     }
     isDragging = true;
     startedDraggingAt.mutateInto(event.pos);
@@ -44,8 +44,8 @@ export default function Draggable(geometry: ReturnType<typeof Geometry>) {
     if (physics) {
       physics.body.static = false;
     }
-    if (store.dragged === component.entity) {
-      delete store.dragged;
+    if (store.ui!.dragged === component.entity) {
+      delete store.ui!.dragged;
       emitter.emit("dragStop");
     }
     isDragging = false;

@@ -18,26 +18,29 @@ import { range } from "lodash";
 import CanvasCenter from "./CanvasCenter";
 import Runner from "./Runner";
 import { resolution } from "./constants";
+import { GameState } from "take6-engine";
 
-let store: RootData;
-let logic: Logic;
+const store: {ui?:RootData; logic?: Logic} = {};
 
-export { store, logic };
+export { store };
 
-export default function Root() {
+export default function Root(data?: GameState, isLocal = true) {
   useType(Root);
+  console.log("creating root!!");
 
   const canvas = useNewComponent(() => Canvas({ backgroundColor: "#444"}));
   canvas.setPixelated(false);
 
-  logic = new Logic();
+  store.logic = new Logic(data, isLocal);
+
+  const logic = store.logic;
 
   const center = useChild(() => {
     useNewComponent(CanvasCenter);
     useNewComponent(Runner);
   });
 
-  const rootData: RootData = {
+  store.ui = {
     placeholders: {
       players: {},
       rows: [],
@@ -52,30 +55,30 @@ export default function Root() {
     waitingAnimations: 0
   };
 
-  store = rootData;
+  const ui = store.ui;
 
-  rootData.placeholders.players[logic.player] = useChild(() => Placeholder(new Vector(-220, 170).multiplyMutate(resolution), "facedown", logic.player));
+  store.ui.placeholders.players[store.logic.player] = useChild(() => Placeholder(new Vector(-220, 170).multiplyMutate(resolution), "facedown", logic.player));
   useChild(() => PlayerLabel(new Vector(0, 210).multiplyMutate(resolution), logic.state.players[logic.player], logic.player));
 
-  rootData.placeholders.players[logic.player].getComponent(Placeholder)!.data.enabled = true;
+  store.ui.placeholders.players[logic.player].getComponent(Placeholder)!.data.enabled = true;
 
   for (const entry of Object.entries(range(0, logic.state.players.length).filter(pl => pl !== logic.player))) {
     const index = + entry[0];
     const player = entry[1];
 
     if (index <= 5) {
-      rootData.placeholders.players[player] = useChild(() => Placeholder(new Vector(173 + 145 * (index % 2), -163 + 110 * Math.floor(index /2)).multiplyMutate(resolution), "facedown", player));
+      store.ui.placeholders.players[player] = useChild(() => Placeholder(new Vector(173 + 145 * (index % 2), -163 + 110 * Math.floor(index /2)).multiplyMutate(resolution), "facedown", player));
       useChild(() => PlayerLabel(new Vector(173 + 145 * (index % 2), -218 + 110 * Math.floor(index /2)).multiplyMutate(resolution), logic.state.players[player], player));
     } else {
-      rootData.placeholders.players[player] = useChild(() => Placeholder(new Vector(-317, -163 + 110 * (index - 6)).multiplyMutate(resolution), "facedown", player));
+      store.ui.placeholders.players[player] = useChild(() => Placeholder(new Vector(-317, -163 + 110 * (index - 6)).multiplyMutate(resolution), "facedown", player));
       useChild(() => PlayerLabel(new Vector(-317, -218 + 110 * (index - 6)).multiplyMutate(resolution), logic.state.players[player], player));
     }
   }
 
   for (let i = 0; i < logic.state.rows.length; i++) {
-    const row: typeof rootData.placeholders.rows[0] = [];
+    const row: typeof ui.placeholders.rows[0] = [];
 
-    rootData.placeholders.rows.push(row);
+    store.ui.placeholders.rows.push(row);
     for (let j = 0; j < 6; j++) {
       const pos = new Vector(-203 + j * 55, (i - 1.5) * 80 - 75).multiplyMutate(resolution);
 
@@ -91,7 +94,7 @@ export default function Root() {
         shape: new Polygon([])
       }));
     });
-    rootData.handAttractors.push(attractor);
+    store.ui.handAttractors.push(attractor);
   }
 
   createBoard();

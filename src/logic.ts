@@ -10,20 +10,21 @@ import { repositionHandAttractor, createHand, createBoard, placeFacedownCards, p
 import { EventEmitter } from "events";
 
 export default class Logic extends EventEmitter {
-  constructor(local = true) {
+  constructor(data?: GameState, local = true) {
     super();
 
-    this.#state = setup(10, {}, "");
+    this.#state = data ?? setup(10, {}, "");
     this.player = 0;
     this.isLocal = local;
     this.state = cloneDeep(stripSecret(this.#state, this.player));
   }
 
   overwrite(data: GameState) {
+    console.log("overwriting with", data);
     this.#state = data;
     this.state = cloneDeep(data);
 
-    for (const card of Object.values(store.cards)) {
+    for (const card of Object.values(store.ui!.cards)) {
       card.destroy();
     }
 
@@ -49,7 +50,7 @@ export default class Logic extends EventEmitter {
       if (!commands.chooseCard.some(card => card.number === cardData.number)) {
         return;
       }
-      if (!overlaps(card, store.placeholders.players[this.player])) {
+      if (!overlaps(card, store.ui!.placeholders.players[this.player])) {
         return;
       }
 
@@ -63,7 +64,7 @@ export default class Logic extends EventEmitter {
       this.updateAvailableMoves();
     } else if (commands.placeCard) {
       for (const data of commands.placeCard) {
-        if (store.placeholders.rows[data.row].some(placeholder => placeholder.getComponent(Placeholder)!.data.enabled && overlaps(card, placeholder))) {
+        if (store.ui!.placeholders.rows[data.row].some(placeholder => placeholder.getComponent(Placeholder)!.data.enabled && overlaps(card, placeholder))) {
           if (this.isLocal) {
             this.#state = move(this.#state, {name: MoveName.PlaceCard, data}, this.player);
           } else {
@@ -118,7 +119,7 @@ export default class Logic extends EventEmitter {
               const hand = this.state.players[this.player].hand;
               for (let i = 0; i < hand.length; i++) {
                 repositionHandAttractor(i, hand.length);
-                store.handAttractors[i].getComponent(Attractor)?.attract(store.cards[hand[i].number]);
+                store.ui!.handAttractors[i].getComponent(Attractor)?.attract(store.ui!.cards[hand[i].number]);
               }
             } else {
               this.state.players[player].hand.shift();
@@ -129,8 +130,8 @@ export default class Logic extends EventEmitter {
             const card = this.state.players[player].faceDownCard!;
             if (move.data.replace) {
               // put new card on 6th spot
-              const placeholder = store.placeholders.rows[move.data.row].slice(-1)[0];
-              placeholder.getComponent(Attractor).attract(store.cards[card.number]);
+              const placeholder = store.ui!.placeholders.rows[move.data.row].slice(-1)[0];
+              placeholder.getComponent(Attractor).attract(store.ui!.cards[card.number]);
 
               this.queueAnimation(() => {
                 console.log("delaying before taking row");
@@ -140,7 +141,7 @@ export default class Logic extends EventEmitter {
                 console.log("Taking row");
                 // Then remove all existing cards from row
                 for (const card of this.state.rows[move.data.row]) {
-                  store.cards[card.number].destroy();
+                  store.ui!.cards[card.number].destroy();
                 }
                 this.state.players[player].points += sumBy(this.state.rows[move.data.row], "points");
                 this.state.rows[move.data.row] = [];
@@ -155,8 +156,8 @@ export default class Logic extends EventEmitter {
               console.log("attracting card to place on board", card);
               this.state.rows[move.data.row].push(card);
 
-              const placeholder = store.placeholders.rows[move.data.row][this.state.rows[move.data.row].length - 1];
-              placeholder.getComponent(Attractor).attract(store.cards[card.number]);
+              const placeholder = store.ui!.placeholders.rows[move.data.row][this.state.rows[move.data.row].length - 1];
+              placeholder.getComponent(Attractor).attract(store.ui!.cards[card.number]);
             });
             return;
           }
@@ -179,7 +180,7 @@ export default class Logic extends EventEmitter {
             return;
           }
           case GameEventName.RoundStart: {
-            for (const card of Object.values(store.cards)) {
+            for (const card of Object.values(store.ui!.cards)) {
               card.destroy();
             }
 
@@ -226,8 +227,8 @@ export default class Logic extends EventEmitter {
   }
 
   updateUI() {
-    if (store.waitingAnimations) {
-      console.log("waiting animations", store.waitingAnimations);
+    if (store.ui!.waitingAnimations) {
+      // console.log("waiting animations", store.ui!.waitingAnimations);
       return;
     }
 
@@ -267,14 +268,14 @@ export default class Logic extends EventEmitter {
   }
 
   stackAnimation() {
-    store.waitingAnimations += 1;
+    store.ui!.waitingAnimations += 1;
   }
 
   onAnimationFinished() {
-    store.waitingAnimations = Math.max(store.waitingAnimations - 1, 0);
-    console.log("on animation finished", store.waitingAnimations);
+    store.ui!.waitingAnimations = Math.max(store.ui!.waitingAnimations - 1, 0);
+    // console.log("on animation finished", store.ui!.waitingAnimations);
 
-    if (store.waitingAnimations === 0) {
+    if (store.ui!.waitingAnimations === 0) {
       this.updateUI();
     }
   }
