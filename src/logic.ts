@@ -10,11 +10,11 @@ import { repositionHandAttractor, createHand, createBoard, placeFacedownCards, p
 import { EventEmitter } from "events";
 
 export default class Logic extends EventEmitter {
-  constructor(data?: GameState, local = true) {
+  constructor(data?: GameState, player = 0, local = true) {
     super();
 
     this.#state = data ?? setup(10, {}, "");
-    this.player = 0;
+    this.player = player;
     this.isLocal = local;
     this.state = cloneDeep(stripSecret(this.#state, this.player));
   }

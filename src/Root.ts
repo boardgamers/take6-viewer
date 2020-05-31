@@ -13,7 +13,7 @@ import PlayerLabel from "./PlayerLabel";
 import Placeholder from "./Placeholder";
 import { RootData } from "./rootdata";
 import Logic from "./logic";
-import { createHand, createBoard } from "./ui";
+import { createHand, createBoard, placeFacedownCards } from "./ui";
 import { range } from "lodash";
 import CanvasCenter from "./CanvasCenter";
 import Runner from "./Runner";
@@ -24,14 +24,14 @@ const store: {ui?:RootData; logic?: Logic} = {};
 
 export { store };
 
-export default function Root(data?: GameState, isLocal = true) {
+export default function Root(data?: GameState, player = 0, isLocal = true) {
   useType(Root);
   console.log("creating root!!");
 
   const canvas = useNewComponent(() => Canvas({ backgroundColor: "#444"}));
   canvas.setPixelated(false);
 
-  store.logic = new Logic(data, isLocal);
+  store.logic = new Logic(data, player, isLocal);
 
   const logic = store.logic;
 
@@ -99,6 +99,7 @@ export default function Root(data?: GameState, isLocal = true) {
 
   createBoard();
   createHand();
+  placeFacedownCards();
 
   // Transfer everything to the canvas center
   const root = useEntity();

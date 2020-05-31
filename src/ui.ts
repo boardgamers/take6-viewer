@@ -18,7 +18,7 @@ export function createHand() {
   if (!store.logic!.state) {
     return;
   }
-  const hand = store.logic!.state.players[0].hand;
+  const hand = store.logic!.state.players[store.logic!.player].hand;
   const run = store.ui!.canvasCenter.getComponent(Runner)!.run;
 
   for (let i = hand.length - 1; i >= 0; i--) {
@@ -50,10 +50,13 @@ export function createBoard() {
 }
 
 export function placeFacedownCards() {
+  console.log("place facedown cards");
   if (!store.logic!.state) {
+    console.log("no state");
     return;
   }
   for (const player of store.logic!.state.players) {
+    console.log("checking", player.name, player.faceDownCard);
     if (player.faceDownCard) {
       const playerIndex = store.logic!.state.players.indexOf(player);
       placeFacedownCard(playerIndex, player.faceDownCard);
@@ -62,6 +65,7 @@ export function placeFacedownCards() {
 }
 
 export function placeFacedownCard(player: number, card: ICard) {
+  console.log("placing facedown card", player, card);
   const placeholder = store.ui!.placeholders.players[player];
   const attractees: Entity[] = [...placeholder?.getComponent(Attractor)!.attractees];
   const existingCardEntity = attractees?.find(entity => entity.getComponent(Card));
