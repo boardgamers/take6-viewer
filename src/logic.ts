@@ -1,5 +1,5 @@
 import { cloneDeep, sumBy, isEqual } from "lodash";
-import { GameState, setup, move, MoveName, moveAI, stripSecret, GameEventName, Card as ICard, AvailableMoves, availableMoves, LogItem } from "take6-engine";
+import { GameState, setup, move, MoveName, moveAI, stripSecret, GameEventName, Card as ICard, AvailableMoves, LogItem } from "take6-engine";
 import { Entity } from "@hex-engine/2d";
 import Card from "./Card";
 import { store } from "./Root";
@@ -21,6 +21,7 @@ export default class Logic extends EventEmitter {
 
   overwrite(data: GameState) {
     console.log("overwriting with", data);
+    this.#pendingAvailableMoves = null;
     this.#state = data;
     this.state = cloneDeep(data);
 
@@ -31,6 +32,8 @@ export default class Logic extends EventEmitter {
     createHand();
     createBoard();
     placeFacedownCards();
+
+    this.updateUI();
   }
 
   handleCardDrop(card: Entity) {
@@ -199,12 +202,15 @@ export default class Logic extends EventEmitter {
   }
 
   updateLog(data: {start: number, log: LogItem[], availableMoves: AvailableMoves[]}) {
-    for (let i = 0; i < availableMoves.length; i++) {
-      this.#state.players[i].availableMoves = availableMoves[i];
-    }
+    this.#pendingAvailableMoves = null;
 
     if (data.start > this.#state.log.length) {
       this.emit("fetchState");
+      return;
+    }
+
+    if (data.log.length === 0) {
+      this.loadAvailableMoves(data.availableMoves);
       return;
     }
 
@@ -214,16 +220,17 @@ export default class Logic extends EventEmitter {
       return;
     }
 
-    // Check if can be merged
-    for (const localLogItem of this.#state.log.slice(data.start)) {
-      if (!data.log.some(item => isEqual(item, localLogItem))) {
-        this.emit("fetchState");
-        return;
-      }
-    }
-
     this.#state.log = [...this.#state.log.slice(0, data.start), ...data.log];
+    this.#pendingAvailableMoves = {index: data.start + data.log.length, availableMoves: data.availableMoves};
     this.updateUI();
+  }
+
+  loadAvailableMoves(moves: AvailableMoves[]) {
+    this.#pendingAvailableMoves = null;
+    for (let i = 0; i < moves.length; i++) {
+      this.#state.players[i].availableMoves = moves[i];
+      this.state.players[i].availableMoves = moves[i];
+    }
   }
 
   updateUI() {
@@ -237,6 +244,10 @@ export default class Logic extends EventEmitter {
       this.#animationQueue.shift()!();
       this.delay(0);
       return;
+    }
+
+    if (this.#pendingAvailableMoves && this.#pendingAvailableMoves.index === this.state.log.length) {
+      this.loadAvailableMoves(this.#pendingAvailableMoves.availableMoves);
     }
 
     if (this.state.log.length < this.#state.log.length) {
@@ -286,4 +297,5 @@ export default class Logic extends EventEmitter {
   isLocal: boolean;
 
   #animationQueue: Array<() => any> = [];
+  #pendingAvailableMoves?: {index: number, availableMoves: AvailableMoves[]} | null = null;
 }
