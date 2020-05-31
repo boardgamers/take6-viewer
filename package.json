@@ -1,6 +1,6 @@
 {
   "name": "take6-viewer",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "unpkg": "dist/main.js",
   "dependencies": {
     "@hex-engine/2d": "^0.4.1",
