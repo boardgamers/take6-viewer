@@ -1,3 +1,5 @@
+> **⚠️ This repository has been archived.** Development continues in the [**boardgamers/take6**](https://github.com/boardgamers/take6) monorepo, where this project lives under `viewer/`. Please open all new issues and pull requests there.
+
 # Take 6 (UI)
 
 [https://donkeytech.github.io/take6-viewer/dist/index.html](Online Demo)
